@@ -26,17 +26,16 @@ L.rectangle(CAMPUS_BOUNDS, {
 }).addTo(map).bindPopup("Northern Bukidnon State College");
 
 // Basemap layer gamitCartoDB Voyager
-const colored = L.tileLayer(
-  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-  { maxZoom: 19 }
-);
+const colored = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
 
 // Alternative Satellite Basemap Layer gamit ESRI
 const satellite = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
   { maxZoom: 19 }
 );
-satellite.addTo(map);
+colored.addTo(map);
 
 // Control Layer para sa maps (CartoDB Voyager | ESRI Satellite)
 L.control.layers(
