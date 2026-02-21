@@ -14,6 +14,12 @@ const campusBuildings = [
         pollutionLevel: "moderate",
         description: "Main administrative offices"
     },
+     {
+        name: "NBSC LIBRARY",
+        coordinates: [8.359264030617997, 124.86789449725583],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
 
     // Add more buildings here...
 ];
