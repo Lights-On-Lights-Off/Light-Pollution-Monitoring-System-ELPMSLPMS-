@@ -32,6 +32,12 @@ const campusBuildings = [
         pollutionLevel: "moderate",
         description: "Main administrative offices"
     },
+     {
+        name: "ICS LABAORATORY",
+        coordinates: [8.359221460529115, 124.86905085372219],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
 
     // Add more buildings here...
 ];
