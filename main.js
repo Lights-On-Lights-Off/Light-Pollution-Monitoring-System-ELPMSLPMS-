@@ -88,3 +88,37 @@ function addBuildingMarker(building) {
         title: building.name
     }).addTo(map);
   }
+  
+    // --- UPDATED POPUP CONTENT (Dark Text for White Background) ---
+    const popupContent = `
+        <div style="font-family: 'Inter', sans-serif; padding: 5px; min-width: 200px;">
+            <h4 style="
+                margin: 0 0 8px 0;
+                color: #111827; /* Dark Black */
+                font-size: 16px;
+                font-weight: 700;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 8px;
+            ">${building.name}</h4>
+            
+            <p style="margin: 8px 0; font-size: 14px; color: #374151;">
+                <strong>Level:</strong> 
+                <span style="
+                    color: ${color}; 
+                    font-weight: 600; 
+                    background: #f3f4f6; 
+                    padding: 2px 6px; 
+                    border-radius: 4px;
+                ">${getPollutionLabel(building.pollutionLevel)}</span>
+            </p>
+            
+            <p style="
+                margin: 0;
+                color: #6b7280; /* Grey description text */
+                font-size: 13px;
+                line-height: 1.4;
+            ">${building.description}</p>
+        </div>
+    `;
+
+    marker.bindPopup(popupContent);
