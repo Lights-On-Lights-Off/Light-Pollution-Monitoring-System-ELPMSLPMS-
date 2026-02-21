@@ -122,3 +122,40 @@ function addBuildingMarker(building) {
     `;
 
     marker.bindPopup(popupContent);
+      
+    // Simple hover animation
+    marker.on('mouseover', function() {
+        this._icon.querySelector('div').style.transform = 'scale(1.2)';
+    });
+    marker.on('mouseout', function() {
+        this._icon.querySelector('div').style.transform = 'scale(1)';
+    });
+  
+
+function getPollutionColor(level) {
+    // Slightly darker colors for better contrast on white
+    switch(level) {
+        case 'low': return '#16a34a';      // Green
+        case 'moderate': return '#d97706'; // Orange
+        case 'high': return '#dc2626';     // Red
+        default: return '#9ca3af';
+    }
+}
+
+function getPollutionLabel(level) {
+    switch(level) {
+        case 'low': return 'Low';
+        case 'moderate': return 'Moderate';
+        case 'high': return 'High';
+        default: return 'Unknown';
+    }
+}
+
+function getPollutionStatus(level) {
+    switch(level) {
+        case 'low': return 'Acceptable';
+        case 'moderate': return 'Check Required';
+        case 'high': return 'Action Needed';
+        default: return 'Unknown';
+    }
+}
