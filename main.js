@@ -1,48 +1,227 @@
-// long,lat sa campus
-const CAMPUS_CENTER = [8.359999, 124.868103];
+let map;
 
-// Define bounds sa campus paras campus ditso
-const CAMPUS_BOUNDS = L.latLngBounds(
-  [8.355000, 124.860000],
-  [8.365000, 124.876000]  
-);
+// NBSC Campus Buildings Data
+const campusBuildings = [
+    {
+        name: "SWDC Building",
+        coordinates: [8.360309105794068, 124.86777742438035],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
+ {
+        name: "Northern Bukidnon State College Covereed Court",
+        coordinates: [8.360122375785208, 124.86894170546891],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
+     {
+        name: "NBSC LIBRARY",
+        coordinates: [8.359264030617997, 124.86789449725583],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
+     {
+        name: "NBSC CLINIC",
+        coordinates: [8.359157605365368, 124.86817955256836],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
+     {
+        name: "BSBA BUILDING",
+        coordinates: [8.359096410833255, 124.86842964826772],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
+     {
+        name: "ICS LABAORATORY",
+        coordinates: [8.359221460529115, 124.86905085372219],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
 
-//Leaflet ni for map initialization v2 (naanay panning )
-const map = L.map("map", {
-  center: CAMPUS_CENTER,
-  zoom: 18,
-  minZoom: 16,
-  maxZoom: 30,
-  maxBounds: CAMPUS_BOUNDS,
-  maxBoundsViscosity: 1.0,
-  rotate: true,
+    // Add more buildings here...
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+    showHomePage();
 });
 
-// Para ma mark ang border around campus since walay way para campus lang makita
-L.rectangle(CAMPUS_BOUNDS, {
-  color: "#0d6efd",
-  weight: 2,
-  fillOpacity: 0.05
-}).addTo(map).bindPopup("Northern Bukidnon State College");
+function showHomePage() {
+    document.getElementById('home-page').classList.add('active');
+    document.getElementById('map-page').classList.remove('active');
+    if (map) {
+        map.remove();
+        map = null;
+    }
+}
 
-// Basemap layer gamitCartoDB Voyager
-const colored = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+function showMapPage() {
+    document.getElementById('home-page').classList.remove('active');
+    document.getElementById('map-page').classList.add('active');
+    setTimeout(() => {
+        initializeMap();
+        populateBuildingTable();
+    }, 100);
+}
 
-// Alternative Satellite Basemap Layer gamit ESRI
-const satellite = L.tileLayer(
-  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  { maxZoom: 19 }
-);
-colored.addTo(map);
+function initializeMap() {
+    const campusCenter = [8.3595, 124.8675];
+    map = L.map('campus-map', {
+        center: campusCenter,
+        zoom: 16,
+        minZoom: 14,
+        maxZoom: 18,
+        zoomControl: true
+    });
 
-// Control Layer para sa maps (CartoDB Voyager | ESRI Satellite)
-L.control.layers(
-  {
-    "Colored Map": colored,
-    "Satellite View": satellite
-  },
-  null,
-  { position: "bottomright" }
-).addTo(map);
+    // 1. STANDARD OSM TILES (Naturally Light/White)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // 2. Campus Boundary (Darker Yellow for visibility on white)
+    const campusBounds = L.latLngBounds(
+        [8.3540, 124.8620],
+        [8.3650, 124.8730]
+    );
+    
+    L.rectangle(campusBounds, {
+        color: '#f59e0b', // Darker yellow/orange
+        weight: 2,
+        fillOpacity: 0.05,
+        fillColor: '#f59e0b'
+    }).addTo(map).bindPopup('NBSC Campus Boundary');
+
+    campusBuildings.forEach(building => {
+        addBuildingMarker(building);
+    });
+}
+
+function addBuildingMarker(building) {
+    const color = getPollutionColor(building.pollutionLevel);
+    
+    const customIcon = L.divIcon({
+        className: 'campus-marker',
+        html: `<div style="
+            background: ${color};
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 3px solid #fff; /* White border makes it pop on map */
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        "></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+
+    const marker = L.marker(building.coordinates, {
+        icon: customIcon,
+        title: building.name
+    }).addTo(map);
+
+    // --- UPDATED POPUP CONTENT (Dark Text for White Background) ---
+    const popupContent = `
+        <div style="font-family: 'Inter', sans-serif; padding: 5px; min-width: 200px;">
+            <h4 style="
+                margin: 0 0 8px 0;
+                color: #111827; /* Dark Black */
+                font-size: 16px;
+                font-weight: 700;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 8px;
+            ">${building.name}</h4>
+            
+            <p style="margin: 8px 0; font-size: 14px; color: #374151;">
+                <strong>Level:</strong> 
+                <span style="
+                    color: ${color}; 
+                    font-weight: 600; 
+                    background: #f3f4f6; 
+                    padding: 2px 6px; 
+                    border-radius: 4px;
+                ">${getPollutionLabel(building.pollutionLevel)}</span>
+            </p>
+            
+            <p style="
+                margin: 0;
+                color: #6b7280; /* Grey description text */
+                font-size: 13px;
+                line-height: 1.4;
+            ">${building.description}</p>
+        </div>
+    `;
+
+    marker.bindPopup(popupContent);
+    
+    // Simple hover animation
+    marker.on('mouseover', function() {
+        this._icon.querySelector('div').style.transform = 'scale(1.2)';
+    });
+    marker.on('mouseout', function() {
+        this._icon.querySelector('div').style.transform = 'scale(1)';
+    });
+}
+
+function getPollutionColor(level) {
+    // Slightly darker colors for better contrast on white
+    switch(level) {
+        case 'low': return '#16a34a';      // Green
+        case 'moderate': return '#d97706'; // Orange
+        case 'high': return '#dc2626';     // Red
+        default: return '#9ca3af';
+    }
+}
+
+function getPollutionLabel(level) {
+    switch(level) {
+        case 'low': return 'Low';
+        case 'moderate': return 'Moderate';
+        case 'high': return 'High';
+        default: return 'Unknown';
+    }
+}
+
+function getPollutionStatus(level) {
+    switch(level) {
+        case 'low': return 'Acceptable';
+        case 'moderate': return 'Check Required';
+        case 'high': return 'Action Needed';
+        default: return 'Unknown';
+    }
+}
+
+function populateBuildingTable() {
+    const tableBody = document.getElementById('building-table-body');
+    // Ensure the table in HTML has class="light-table"
+    
+    tableBody.innerHTML = '';
+    
+    campusBuildings.forEach(building => {
+        const row = document.createElement('tr');
+        const label = getPollutionLabel(building.pollutionLevel);
+        
+        row.innerHTML = `
+            <td><strong>${building.name}</strong></td>
+            <td><span class="status-${building.pollutionLevel}">${label}</span></td>
+            <td>${getPollutionStatus(building.pollutionLevel)}</td>
+        `;
+        
+        row.addEventListener('click', () => {
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker && layer.options.title === building.name) {
+                    layer.openPopup();
+                    map.setView(building.coordinates, 17);
+                }
+            });
+        });
+        
+        tableBody.appendChild(row);
+    });
+}
+
+window.addEventListener('resize', function() {
+    if (map) map.invalidateSize();
+});
