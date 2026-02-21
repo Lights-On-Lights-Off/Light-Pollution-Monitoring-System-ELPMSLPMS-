@@ -9,4 +9,8 @@ const campusBuildings = [
         description: "Main administrative offices"
         
     },
+    // Add more buildings here...
 ]
+document.addEventListener('DOMContentLoaded', function() {
+    showHomePage();
+});
