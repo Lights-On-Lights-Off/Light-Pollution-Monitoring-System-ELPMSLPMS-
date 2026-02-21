@@ -328,3 +328,11 @@ body {
     background: #ffc107 !important;
     color: #0a0a0a !important;
 }
+/* Additional map styling for white background */
+.leaflet-tile-pane {
+    filter: contrast(1.1) brightness(1.05);
+}
+
+.leaflet-marker-icon {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
