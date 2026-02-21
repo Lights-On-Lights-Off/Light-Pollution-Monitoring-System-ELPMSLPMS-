@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NBSC Light Pollution Monitoring System</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
-     <!-- Home Page -->
+    <!-- Home Page -->
     <div id="home-page" class="page active">
         <header class="header">
             <div class="header-content">
@@ -36,7 +36,8 @@
             </section>
         </main>
     </div>
-     <!-- Map Page -->
+
+    <!-- Map Page -->
     <div id="map-page" class="page">
         <header class="header">
             <div class="header-content">
@@ -48,6 +49,7 @@
         <main class="map-main">
             <div class="map-container">
                 <div id="campus-map"></div>
+                
                 <!-- Legend -->
                 <div class="legend">
                     <h4>Light Pollution Levels</h4>
@@ -65,7 +67,8 @@
                     </div>
                 </div>
             </div>
-<!-- Building Table -->
+
+            <!-- Building Table -->
             <div class="table-container">
                 <h3>Building Light Pollution Levels</h3>
                 <table class="building-table">
@@ -87,4 +90,4 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="main.js"></script>
 </body>
-</html> 
+</html>
