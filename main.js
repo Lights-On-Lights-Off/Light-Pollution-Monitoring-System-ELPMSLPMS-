@@ -41,3 +41,25 @@ function initializeMap() {
         zoomControl: true
     });
   }
+    // 1. STANDARD OSM TILES (Naturally Light/White)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // 2. Campus Boundary (Darker Yellow for visibility on white)
+    const campusBounds = L.latLngBounds(
+        [8.3540, 124.8620],
+        [8.3650, 124.8730]
+    );
+    
+    L.rectangle(campusBounds, {
+        color: '#f59e0b', // Darker yellow/orange
+        weight: 2,
+        fillOpacity: 0.05,
+        fillColor: '#f59e0b'
+    }).addTo(map).bindPopup('NBSC Campus Boundary');
+
+    campusBuildings.forEach(building => {
+        addBuildingMarker(building);
+    });
