@@ -31,3 +31,13 @@ function showMapPage() {
         populateBuildingTable();
     }, 100);
 }
+function initializeMap() {
+    const campusCenter = [8.3595, 124.8675];
+    map = L.map('campus-map', {
+        center: campusCenter,
+        zoom: 16,
+        minZoom: 14,
+        maxZoom: 18,
+        zoomControl: true
+    });
+  }
