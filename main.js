@@ -3,8 +3,8 @@ let map;
 // NBSC Campus Buildings Data
 const campusBuildings = [
     {
-        name: "Administration Building",
-        coordinates: [8.3599, 124.8681],
+        name: "SWDC Building",
+        coordinates: [8.360309105794068, 124.86777742438035],
         pollutionLevel: "moderate",
         description: "Main administrative offices"
     },
