@@ -505,3 +505,38 @@ body {
         font-size: 0.8rem;
     }
 }
+
+/* Smooth transitions and hover effects */
+.page {
+    transition: all 0.3s ease-in-out;
+}
+
+.cta-button,
+.back-button {
+    transition: all 0.3s ease;
+}
+
+.building-table tr {
+    transition: background-color 0.3s ease;
+}
+
+.legend {
+    transition: all 0.3s ease;
+}
+
+.legend:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Focus states for accessibility */
+.cta-button:focus,
+.back-button:focus {
+    outline: 2px solid #ffc107;
+    outline-offset: 2px;
+}
+
+.building-table tr:focus {
+    outline: 1px solid #ffc107;
+    outline-offset: -1px;
+}
