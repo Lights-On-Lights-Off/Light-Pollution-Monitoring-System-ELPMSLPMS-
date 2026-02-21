@@ -87,7 +87,7 @@ function addBuildingMarker(building) {
         icon: customIcon,
         title: building.name
     }).addTo(map);
-  }
+  
   
     // --- UPDATED POPUP CONTENT (Dark Text for White Background) ---
     const popupContent = `
@@ -121,8 +121,9 @@ function addBuildingMarker(building) {
         </div>
     `;
 
+   
     marker.bindPopup(popupContent);
-      
+    
     // Simple hover animation
     marker.on('mouseover', function() {
         this._icon.querySelector('div').style.transform = 'scale(1.2)';
@@ -130,7 +131,7 @@ function addBuildingMarker(building) {
     marker.on('mouseout', function() {
         this._icon.querySelector('div').style.transform = 'scale(1)';
     });
-  
+}
 
 function getPollutionColor(level) {
     // Slightly darker colors for better contrast on white
@@ -159,3 +160,36 @@ function getPollutionStatus(level) {
         default: return 'Unknown';
     }
 }
+
+function populateBuildingTable() {
+    const tableBody = document.getElementById('building-table-body');
+    // Ensure the table in HTML has class="light-table"
+    
+    tableBody.innerHTML = '';
+    
+    campusBuildings.forEach(building => {
+        const row = document.createElement('tr');
+        const label = getPollutionLabel(building.pollutionLevel);
+        
+        row.innerHTML = `
+            <td><strong>${building.name}</strong></td>
+            <td><span class="status-${building.pollutionLevel}">${label}</span></td>
+            <td>${getPollutionStatus(building.pollutionLevel)}</td>
+        `;
+        
+        row.addEventListener('click', () => {
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker && layer.options.title === building.name) {
+                    layer.openPopup();
+                    map.setView(building.coordinates, 17);
+                }
+            });
+        });
+        
+        tableBody.appendChild(row);
+    });
+}
+
+window.addEventListener('resize', function() {
+    if (map) map.invalidateSize();
+});
