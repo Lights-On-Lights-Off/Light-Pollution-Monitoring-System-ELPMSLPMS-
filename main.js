@@ -8,6 +8,13 @@ const campusBuildings = [
         pollutionLevel: "moderate",
         description: "Main administrative offices"
     },
+ {
+        name: "Northern Bukidnon State College Covereed Court",
+        coordinates: [8.360122375785208, 124.86894170546891],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
+
     // Add more buildings here...
 ];
 
