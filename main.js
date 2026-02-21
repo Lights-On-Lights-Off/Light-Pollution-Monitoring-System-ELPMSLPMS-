@@ -3,17 +3,18 @@ let map;
 // NBSC Campus Buildings Data
 const campusBuildings = [
     {
-        name: "SWDC Building",
-        coordinates: [8.360392119715149, 124.86762916676057],
+        name: "Administration Building",
+        coordinates: [8.3599, 124.8681],
         pollutionLevel: "moderate",
         description: "Main administrative offices"
-        
     },
     // Add more buildings here...
-]
+];
+
 document.addEventListener('DOMContentLoaded', function() {
     showHomePage();
 });
+
 function showHomePage() {
     document.getElementById('home-page').classList.add('active');
     document.getElementById('map-page').classList.remove('active');
@@ -31,6 +32,7 @@ function showMapPage() {
         populateBuildingTable();
     }, 100);
 }
+
 function initializeMap() {
     const campusCenter = [8.3595, 124.8675];
     map = L.map('campus-map', {
@@ -40,7 +42,7 @@ function initializeMap() {
         maxZoom: 18,
         zoomControl: true
     });
-  }
+
     // 1. STANDARD OSM TILES (Naturally Light/White)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
@@ -63,6 +65,7 @@ function initializeMap() {
     campusBuildings.forEach(building => {
         addBuildingMarker(building);
     });
+}
 
 function addBuildingMarker(building) {
     const color = getPollutionColor(building.pollutionLevel);
@@ -87,8 +90,7 @@ function addBuildingMarker(building) {
         icon: customIcon,
         title: building.name
     }).addTo(map);
-  
-  
+
     // --- UPDATED POPUP CONTENT (Dark Text for White Background) ---
     const popupContent = `
         <div style="font-family: 'Inter', sans-serif; padding: 5px; min-width: 200px;">
@@ -121,7 +123,6 @@ function addBuildingMarker(building) {
         </div>
     `;
 
-   
     marker.bindPopup(popupContent);
     
     // Simple hover animation
