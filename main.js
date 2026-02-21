@@ -63,3 +63,28 @@ function initializeMap() {
     campusBuildings.forEach(building => {
         addBuildingMarker(building);
     });
+
+function addBuildingMarker(building) {
+    const color = getPollutionColor(building.pollutionLevel);
+    
+    const customIcon = L.divIcon({
+        className: 'campus-marker',
+        html: `<div style="
+            background: ${color};
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 3px solid #fff; /* White border makes it pop on map */
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        "></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+
+    const marker = L.marker(building.coordinates, {
+        icon: customIcon,
+        title: building.name
+    }).addTo(map);
+  }
