@@ -14,3 +14,20 @@ const campusBuildings = [
 document.addEventListener('DOMContentLoaded', function() {
     showHomePage();
 });
+function showHomePage() {
+    document.getElementById('home-page').classList.add('active');
+    document.getElementById('map-page').classList.remove('active');
+    if (map) {
+        map.remove();
+        map = null;
+    }
+}
+
+function showMapPage() {
+    document.getElementById('home-page').classList.remove('active');
+    document.getElementById('map-page').classList.add('active');
+    setTimeout(() => {
+        initializeMap();
+        populateBuildingTable();
+    }, 100);
+}
