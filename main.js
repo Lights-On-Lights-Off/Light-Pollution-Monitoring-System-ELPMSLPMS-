@@ -26,6 +26,12 @@ const campusBuildings = [
         pollutionLevel: "moderate",
         description: "Main administrative offices"
     },
+     {
+        name: "BSBA BUILDING",
+        coordinates: [8.359096410833255, 124.86842964826772],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
 
     // Add more buildings here...
 ];
