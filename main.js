@@ -20,6 +20,12 @@ const campusBuildings = [
         pollutionLevel: "moderate",
         description: "Main administrative offices"
     },
+     {
+        name: "NBSC CLINIC",
+        coordinates: [8.359157605365368, 124.86817955256836],
+        pollutionLevel: "moderate",
+        description: "Main administrative offices"
+    },
 
     // Add more buildings here...
 ];
