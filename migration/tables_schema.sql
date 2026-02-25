@@ -48,4 +48,24 @@ CREATE TABLE locations (
         REFERENCES admins(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
+
+) ENGINE=InnoDB;
+
+-- TABLE: feedback
+
+CREATE TABLE feedback (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    location_id INT NOT NULL,
+    user_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    message TEXT NOT NULL,
+    status ENUM('Pending', 'Reviewed', 'Resolved') 
+        NOT NULL DEFAULT 'Pending',
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_feedback_location
+        FOREIGN KEY (location_id)
+        REFERENCES locations(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;
