@@ -1,3 +1,5 @@
+START TRANSACTION;
+
 -- CREATE DATABASE
 CREATE DATABASE IF NOT EXISTS environmental_light_pollution_db
 CHARACTER SET utf8mb4
@@ -110,3 +112,5 @@ CREATE TABLE activity_logs (
         ON DELETE RESTRICT
 
 ) ENGINE=InnoDB;
+
+COMMIT;
