@@ -68,4 +68,30 @@ CREATE TABLE feedback (
         REFERENCES locations(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
+
+) ENGINE=InnoDB;
+
+
+-- TABLE: activity_logs
+CREATE TABLE activity_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    action_type ENUM(
+        'ADD_LOCATION',
+        'EDIT_LOCATION',
+        'DELETE_LOCATION',
+        'UPDATE_STATUS',
+        'RESOLVE_FEEDBACK'
+    ) NOT NULL,
+    target_table VARCHAR(50) NOT NULL,
+    target_id INT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_activity_admin
+        FOREIGN KEY (admin_id)
+        REFERENCES admins(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+
 ) ENGINE=InnoDB;
