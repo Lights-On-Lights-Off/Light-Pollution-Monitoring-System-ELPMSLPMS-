@@ -66,8 +66,7 @@ CREATE TABLE locations (
 CREATE TABLE feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
     location_id INT NOT NULL,
-    user_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100),
+    user_id INT NOT NULL,
     message TEXT NOT NULL,
     status ENUM('Pending', 'Reviewed', 'Resolved') 
         NOT NULL DEFAULT 'Pending',
@@ -76,6 +75,12 @@ CREATE TABLE feedback (
     CONSTRAINT fk_feedback_location
         FOREIGN KEY (location_id)
         REFERENCES locations(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+
+    CONSTRAINT fk_feedback_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 
