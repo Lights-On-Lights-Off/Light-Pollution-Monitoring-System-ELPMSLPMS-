@@ -20,7 +20,7 @@ INSERT INTO pollution_levels (level_name, color_code, description) VALUES
 
 -- TABLE: admins
 
-CREATE TABLE admins (
+CREATE TABLE admin (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
