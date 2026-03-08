@@ -189,3 +189,52 @@ function updateQuickStats() {
 }
 
 
+function renderDashboard() {
+  renderDashboardRequests();
+  renderDashboardBuildings();
+}
+
+function renderDashboardRequests() {
+  const el     = document.getElementById('dashboard-requests');
+  const recent = [...requests].reverse().slice(0, 5);
+  if (!recent.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>No requests yet</p></div>`;
+    return;
+  }
+  el.innerHTML = recent.map(r => `
+    <div class="mini-item">
+      <div class="mini-item-left">
+        <span class="mini-item-name">${escHtml(r.name)}</span>
+        <span class="mini-item-email">${escHtml(r.email)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="badge ${r.status}">${cap(r.status)}</span>
+        <span style="font-size:0.75rem;color:var(--muted);">${r.date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDashboardBuildings() {
+  const el     = document.getElementById('dashboard-buildings');
+  const counts = {
+    high:     buildings.filter(b => b.pollutionLevel === 'high').length,
+    moderate: buildings.filter(b => b.pollutionLevel === 'moderate').length,
+    low:      buildings.filter(b => b.pollutionLevel === 'low').length,
+  };
+  el.innerHTML = `
+    <div class="mini-item">
+      <span>High Pollution Buildings</span>
+      <span class="badge high">${counts.high}</span>
+    </div>
+    <div class="mini-item">
+      <span>Moderate Pollution Buildings</span>
+      <span class="badge moderate">${counts.moderate}</span>
+    </div>
+    <div class="mini-item">
+      <span>Low Pollution Buildings</span>
+      <span class="badge low">${counts.low}</span>
+    </div>
+  `;
+}
+
