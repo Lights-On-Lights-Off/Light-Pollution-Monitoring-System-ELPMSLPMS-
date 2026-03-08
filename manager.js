@@ -286,3 +286,40 @@ function getFilteredRequests() {
   return requests.filter(r => r.status === statusFilter);
 }
 
+function approveRequest(id) {
+  const r = requests.find(r => r.id === id);
+  if (!r) return;
+  r.status       = 'approved';
+  r.reviewedDate = new Date().toISOString();
+  saveRequests();
+  notifyUser(r, 'approved');
+  updateQuickStats();
+  renderRequestsTable();
+  if (currentSection === 'dashboard') renderDashboard();
+}
+
+function denyRequest(id) {
+  const r = requests.find(r => r.id === id);
+  if (!r) return;
+  r.status       = 'denied';
+  r.reviewedDate = new Date().toISOString();
+  saveRequests();
+  notifyUser(r, 'denied');
+  updateQuickStats();
+  renderRequestsTable();
+  if (currentSection === 'dashboard') renderDashboard();
+}
+
+function deleteRequest(id) {
+  const r = requests.find(r => r.id === id);
+  if (!r) return;
+  if (!confirm(`Move ${r.name}'s request to the recycle bin?`)) return;
+  deletedRequests.push({ ...r, deletedOn: new Date().toISOString() });
+  requests = requests.filter(r => r.id !== id);
+  saveRequests();
+  updateQuickStats();
+  renderRequestsTable();
+  if (currentSection === 'dashboard') renderDashboard();
+}
+
+
