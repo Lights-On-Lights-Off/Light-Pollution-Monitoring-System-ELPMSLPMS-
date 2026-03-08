@@ -61,3 +61,128 @@
       </button>
     </div>
   </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <div id="page-title">Dashboard</div>
+        <div class="topbar-sub" id="topbar-sub">System overview</div>
+      </div>
+      <div class="admin-pill">
+        <div class="admin-avatar" id="admin-avatar">AD</div>
+        <span id="admin-name">Admin</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+
+      <!-- Stat Cards -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon clr-blue">
+            <svg width="20" height="20" fill="#0d6efd" viewBox="0 0 16 16">
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="stat-total-users">0</div>
+            <div class="stat-lbl">Total Users</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon clr-orange">
+            <svg width="20" height="20" fill="#f59e0b" viewBox="0 0 16 16">
+              <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="stat-total-managers">0</div>
+            <div class="stat-lbl">Managers</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon clr-green">
+            <svg width="20" height="20" fill="#22c55e" viewBox="0 0 16 16">
+              <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="stat-total-requests">0</div>
+            <div class="stat-lbl">Total Requests</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon clr-red">
+            <svg width="20" height="20" fill="#ef4444" viewBox="0 0 16 16">
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="stat-pending">0</div>
+            <div class="stat-lbl">Pending Requests</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD SECTION -->
+      <div class="section active" id="section-dashboard">
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-head">
+              <h3>Recent Accounts</h3>
+              <button class="btn btn-ghost btn-sm" onclick="navigate(document.querySelector('[data-section=users]'))">View All</button>
+            </div>
+            <div class="card-body" id="recent-users-list">
+              <div class="empty-state"><div class="empty-icon">👤</div><p>No accounts yet</p></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <h3>Manager Activity</h3>
+              <span class="badge info" id="activity-count" style="background:rgba(13,110,253,0.12);color:#60a5fa;border:1px solid rgba(13,110,253,0.3);">0 events</span>
+            </div>
+            <div class="card-body">
+              <div class="activity-feed" id="activity-feed">
+                <div class="empty-state"><div class="empty-icon">📋</div><p>No manager activity yet</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS MANAGEMENT SECTION -->
+      <div class="section" id="section-users">
+        <div class="card">
+          <div class="card-head">
+            <h3>All Accounts</h3>
+            <div class="card-head-actions">
+              <select class="filter-select" id="role-filter" onchange="renderUsersTable()">
+                <option value="all">All Roles</option>
+                <option value="user">User</option>
+                <option value="manager">Manager</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+            <div id="users-empty" class="empty-state" style="display:none;">
+              <div class="empty-icon">👥</div>
+              <p>No accounts found</p>
+            </div>
+          </div>
+        </div>
+      </div>
