@@ -145,3 +145,39 @@ function loadManagerProfile() {
 }
 
 
+function initNavigation() {
+  document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => navigateTo(btn.dataset.section));
+  });
+}
+
+function navigateTo(id) {
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const navBtn = document.querySelector(`.nav-item[data-section="${id}"]`);
+  if (navBtn) navBtn.classList.add('active');
+
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+
+  const titles = {
+    'dashboard':   'Dashboard Overview',
+    'requests':    'Data Requests Management',
+    'buildings':   'Building Management',
+    'map':         'Campus Map',
+    'recycle-bin': 'Recycle Bin',
+  };
+  document.getElementById('page-title').textContent = titles[id] || 'Dashboard';
+
+  switch (id) {
+    case 'dashboard':   renderDashboard();                       break;
+    case 'requests':    renderRequestsTable();                   break;
+    case 'buildings':   renderBuildingsGrid();                   break;
+    case 'map':         initManagerMap(); renderMapMarkers();    break;
+    case 'recycle-bin': renderRecycleBin();                      break;
+  }
+
+  currentSection = id;
+}
+
+
