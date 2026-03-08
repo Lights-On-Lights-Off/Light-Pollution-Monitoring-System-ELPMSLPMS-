@@ -404,3 +404,22 @@
     function saveUsers(users) {
       localStorage.setItem('nbsc_users', JSON.stringify(users));
     }
+
+    function saveUsers(users) {
+      localStorage.setItem('nbsc_users', JSON.stringify(users));
+    }
+
+    function switchForm(type) {
+      const alertBox = document.getElementById('alert-box');
+      alertBox.className = 'alert';
+
+      if (type === 'register') {
+        document.getElementById('login-form').style.display    = 'none';
+        document.getElementById('register-form').style.display = 'block';
+        document.getElementById('form-title').textContent = 'Create Account';
+      } else {
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('login-form').style.display    = 'block';
+        document.getElementById('form-title').textContent = 'Welcome Back';
+      }
+    }
