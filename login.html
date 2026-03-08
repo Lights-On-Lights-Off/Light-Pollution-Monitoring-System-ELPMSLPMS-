@@ -469,3 +469,44 @@
         }
       }, 800);
     });
+
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const org      = document.getElementById('reg-org').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm  = document.getElementById('reg-confirm').value;
+
+      if (password !== confirm) {
+        showAlert('error');
+        document.getElementById('reg-confirm').classList.add('error-field');
+        setTimeout(() => document.getElementById('reg-confirm').classList.remove('error-field'), 1500);
+        return;
+      }
+
+      if (password.length < 6) {
+        showAlert('error');
+        return;
+      }
+
+      setLoading('register-btn', true);
+
+      setTimeout(() => {
+        const users = getUsers();
+        if (users.find(u => u.email === email)) {
+          showAlert('error');
+          setLoading('register-btn', false);
+          return;
+        }
+
+        users.push({ email, password, name, org });
+        saveUsers(users);
+        showAlert('success');
+        setTimeout(() => switchForm('login'), 1400);
+        setLoading('register-btn', false);
+      }, 800);
+    });
+  </script>
+</body>
+</html>
