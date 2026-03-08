@@ -85,85 +85,79 @@ function loadCampusBuildings() {
 
 loadCampusBuildings();
 
-document.addEventListener('DOMContentLoaded', function() {
-    showHomePage();
+// ── Map Init ──
+const map = L.map("map", {
+  center: CAMPUS_CENTER,
+  zoom: 18,
+  minZoom: 16,
+  maxZoom: 30,
+  maxBounds: CAMPUS_BOUNDS,
+  maxBoundsViscosity: 1.0,
+  rotate: true,
 });
 
-function showHomePage() {
-    document.getElementById('home-page').classList.add('active');
-    document.getElementById('map-page').classList.remove('active');
-    if (map) {
-        map.remove();
-        map = null;
-    }
+// Campus border rectangle
+L.rectangle(CAMPUS_BOUNDS, {
+  color: "#0d6efd",
+  weight: 2,
+  fillOpacity: 0.05
+}).addTo(map).bindPopup("Northern Bukidnon State College");
+
+// Basemap layers
+const colored = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+const satellite = L.tileLayer(
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  { maxZoom: 19 }
+);
+
+L.control.layers(
+  { "Colored Map": colored, "Satellite View": satellite },
+  null,
+  { position: "bottomright" }
+).addTo(map);
+
+// ── Map Markers ──
+const lightMarkers = {};
+
+function buildPopupHTML(building) {
+  const color = POLLUTION_COLORS[building.pollutionLevel];
+  return `
+    <div style="font-family:'Outfit',sans-serif; min-width:180px;">
+      <div style="font-weight:700; font-size:0.95rem; margin-bottom:6px;">${building.name}</div>
+      <div style="margin-bottom:4px;">
+        <span style="color:#888; font-size:0.78rem;">Pollution Level:</span>
+        <span style="
+          display:inline-block;
+          margin-left:6px;
+          padding:2px 8px;
+          border-radius:10px;
+          font-size:0.75rem;
+          font-weight:600;
+          background:${color}33;
+          color:${color};
+          border:1px solid ${color}66;
+        ">${cap(building.pollutionLevel)}</span>
+      </div>
+      <div style="font-size:0.8rem; color:#777; margin-top:4px;">${building.description}</div>
+    </div>
+  `;
 }
 
-function showMapPage() {
-    document.getElementById('home-page').classList.remove('active');
-    document.getElementById('map-page').classList.add('active');
-    setTimeout(() => {
-        initializeMap();
-        populateBuildingTable();
-    }, 100);
-}
+campusBuildings.forEach(building => {
+  const marker = L.circleMarker(building.coordinates, {
+    radius: 10,
+    fillColor: POLLUTION_COLORS[building.pollutionLevel],
+    color: "#fff",
+    weight: 2,
+    fillOpacity: 0.9
+  }).addTo(map);
 
-function initializeMap() {
-    const campusCenter = [8.3595, 124.8675];
-    map = L.map('campus-map', {
-        center: campusCenter,
-        zoom: 16,
-        minZoom: 14,
-        maxZoom: 18,
-        zoomControl: true
-    });
-
-    // 1. STANDARD OSM TILES (Naturally Light/White)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
-
-    // 2. Campus Boundary (Darker Yellow for visibility on white)
-    const campusBounds = L.latLngBounds(
-        [8.3540, 124.8620],
-        [8.3650, 124.8730]
-    );
-    
-    L.rectangle(campusBounds, {
-        color: '#f59e0b', // Darker yellow/orange
-        weight: 2,
-        fillOpacity: 0.05,
-        fillColor: '#f59e0b'
-    }).addTo(map).bindPopup('NBSC Campus Boundary');
-
-    campusBuildings.forEach(building => {
-        addBuildingMarker(building);
-    });
-}
-
-function addBuildingMarker(building) {
-    const color = getPollutionColor(building.pollutionLevel);
-    
-    const customIcon = L.divIcon({
-        className: 'campus-marker',
-        html: `<div style="
-            background: ${color};
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: 3px solid #fff; /* White border makes it pop on map */
-            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        "></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-    });
-
-    const marker = L.marker(building.coordinates, {
-        icon: customIcon,
-        title: building.name
-    }).addTo(map);
+  marker.bindPopup(buildPopupHTML(building));
+  lightMarkers[building.id] = marker;
+});
 
     // --- UPDATED POPUP CONTENT (Dark Text for White Background) ---
     const popupContent = `
