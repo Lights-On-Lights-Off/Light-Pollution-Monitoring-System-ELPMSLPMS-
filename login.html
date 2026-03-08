@@ -376,3 +376,31 @@
       requestAnimationFrame(loop);
     }
     loop();
+
+    const DEFAULT_USERS = [
+      { email: 'user@example.com',    password: 'user1234', name: 'Default User', org: 'NBSC', role: 'user'    },
+      { email: 'manager@example.com', password: 'manager1', name: 'NBSC Manager', org: 'NBSC', role: 'manager' },
+      { email: 'admin@example.com',   password: 'admin123', name: 'NBSC Admin',   org: 'NBSC', role: 'admin'   },
+    ];
+
+    (function seedDefaults() {
+      const raw   = localStorage.getItem('nbsc_users');
+      let users   = raw ? JSON.parse(raw) : [];
+      let changed = false;
+      DEFAULT_USERS.forEach(def => {
+        if (!users.find(u => u.email === def.email)) {
+          users.push(def);
+          changed = true;
+        }
+      });
+      if (changed) localStorage.setItem('nbsc_users', JSON.stringify(users));
+    })();
+
+    function getUsers() {
+      const raw = localStorage.getItem('nbsc_users');
+      return raw ? JSON.parse(raw) : [...DEFAULT_USERS];
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('nbsc_users', JSON.stringify(users));
+    }
