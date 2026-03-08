@@ -298,4 +298,55 @@ function doDeleteUser() {
   updateStats();
   renderDashboard();
   renderUsersTable();
+}
+
+function renderStorageUsage() {
+  let total = 0;
+  for (const key in localStorage) {
+    if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+      total += (localStorage[key].length + key.length) * 2;
+    }
+  }
+  const kb  = (total / 1024).toFixed(1);
+  const pct = Math.min((total / 1024 / 5120) * 100, 100).toFixed(1);
+  document.getElementById('storage-bar').style.width   = pct + '%';
+  document.getElementById('storage-label').textContent = `${kb} KB used (${pct}% of ~5 MB limit)`;
+}
+
+function confirmClearRequests() {
+  showConfirm(
+    'Clear All Requests',
+    'This will permanently delete <strong>all data requests</strong> from the system. This cannot be undone.',
+    'btn btn-danger',
+    () => {
+      localStorage.removeItem('nbscDataRequests');
+      updateStats();
+      renderDashboard();
+      renderStorageUsage();
+    }
+  );
+}
+
+function confirmClearNotifications() {
+  showConfirm(
+    'Clear Notifications',
+    'This will remove <strong>all user notifications</strong> stored in the system.',
+    'btn btn-warn',
+    () => {
+      localStorage.removeItem('userNotifications');
+      renderStorageUsage();
+    }
+  );
+}
+
+function confirmResetBuildings() {
+  showConfirm(
+    'Reset Buildings',
+    'This will restore campus buildings to the <strong>default configuration</strong>. Any custom buildings will be lost.',
+    'btn btn-warn',
+    () => {
+      localStorage.removeItem('nbscBuildings');
+      renderStorageUsage();
+    }
+  );
 } 
