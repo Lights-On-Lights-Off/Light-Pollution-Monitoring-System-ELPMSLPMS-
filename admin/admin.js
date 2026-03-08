@@ -147,3 +147,60 @@ function updateStats() {
   document.getElementById('stat-total-requests').textContent = requests.length;
   document.getElementById('stat-pending').textContent        = requests.filter(r => r.status === 'pending').length;
 } 
+
+function renderDashboard() {
+  renderRecentUsers();
+  renderActivityFeed();
+}
+
+function renderRecentUsers() {
+  const users     = getUsers().filter(u => u.role !== 'admin').slice(-5).reverse();
+  const container = document.getElementById('recent-users-list');
+
+  if (!users.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div><p>No accounts yet</p></div>`;
+    return;
+  }
+
+  container.innerHTML = users.map(u => `
+    <div class="mini-item">
+      <div class="mini-item-left">
+        <span class="mini-item-name">${escHtml(u.name || '—')}</span>
+        <span class="mini-item-sub">${escHtml(u.email)}</span>
+      </div>
+      <span class="badge ${u.role}">${cap(u.role)}</span>
+    </div>
+  `).join('');
+}
+
+function renderActivityFeed() {
+  const activities = getActivityLog().slice(0, 10);
+  const feed       = document.getElementById('activity-feed');
+  const count      = document.getElementById('activity-count');
+
+  count.textContent = `${activities.length} event${activities.length !== 1 ? 's' : ''}`;
+
+  if (!activities.length) {
+    feed.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>No manager activity yet</p></div>`;
+    return;
+  }
+
+  feed.innerHTML = activities.map(r => {
+    const managerName = r.reviewedBy || 'A manager';
+    const statusClass = r.status;
+    const statusWord  = cap(r.status);
+    const time        = r.reviewedAt ? formatTime(r.reviewedAt) : formatTime(r.date);
+    return `
+      <div class="activity-item">
+        <div class="activity-dot ${statusClass}"></div>
+        <div>
+          <div class="activity-text">
+            <strong>${escHtml(managerName)}</strong> ${statusWord.toLowerCase()} request
+            <strong>#${escHtml(r.id)}</strong> from <strong>${escHtml(r.name || r.email || '—')}</strong>
+          </div>
+          <div class="activity-time">${time}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+} 
