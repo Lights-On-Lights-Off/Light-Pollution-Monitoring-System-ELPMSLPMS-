@@ -138,3 +138,140 @@
     .dropdown-item-btn.danger:hover { background: rgba(239,68,68,0.1); }
 
     @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+    .dashboard-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 16px 24px;
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: var(--card-bg);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 5px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px 14px;
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      color: var(--muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .tab-btn.active { background: rgba(13,110,253,0.15); color: #fff; border-bottom: 2px solid var(--accent); }
+
+    .tab-content { display: none; animation: fadeIn 0.2s ease; }
+    .tab-content.active { display: block; }
+
+    .dash-card {
+      background: var(--card-bg);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .dash-card h4 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+    .dash-card .card-sub {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .request-item {
+      background: #0d0c0e;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .request-item:hover { border-color: rgba(13,110,253,0.3); }
+    .request-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .request-id { font-size: 0.95rem; font-weight: 600; color: var(--accent); font-family: monospace; }
+    .status-badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.97rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .status-badge.pending  { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .status-badge.approved { background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .status-badge.rejected { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .request-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .meta-item label { font-size: 0.95rem; color: var(--muted); display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .meta-item span  { font-size: 1rem; color: #e0e0e0; }
+    .btn-delete {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 6px;
+      color: #f87171;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-delete:hover { background: rgba(239,68,68,0.2); }
+
+    .request-item-actions {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid var(--stroke);
+    }
+
+    .btn-download {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 6px;
+      color: #4ade80;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem; font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.14s;
+    }
+    .btn-download:hover  { background: rgba(34,197,94,0.22); transform: translateY(-1px); }
+    .btn-download:active { transform: scale(0.97); }
+
+    .empty-state {
+      text-align: center;
+      padding: 36px 20px;
+      color: var(--muted);
+      font-size: 1.15rem;
+    }
+    .empty-state .empty-icon { font-size: 2.4rem; margin-bottom: 10px; }
