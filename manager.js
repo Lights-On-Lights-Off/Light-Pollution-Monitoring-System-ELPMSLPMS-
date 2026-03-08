@@ -106,3 +106,18 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   checkForNewRequests();
 });
+
+function seedDefaultManager() {
+  const users  = JSON.parse(localStorage.getItem('nbsc_users') || '[]');
+  const exists = users.find(u => u.email === 'manager@example.com');
+  if (!exists) {
+    users.push({
+      name:     'NBSC Manager',
+      email:    'manager@example.com',
+      password: 'manager1',
+      role:     'manager',
+    });
+    localStorage.setItem('nbsc_users', JSON.stringify(users));
+  }
+}
+
