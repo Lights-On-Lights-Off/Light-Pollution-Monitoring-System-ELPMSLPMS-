@@ -312,3 +312,114 @@
 
     </div>
   </div>
+
+   <script>
+    if (window.location.hash === '#register') {
+      switchForm('register');
+    }
+
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    class Particle {
+      constructor() { this.reset(true); }
+      reset(init) {
+        this.x  = Math.random() * W;
+        this.y  = init ? Math.random() * H : H + 10;
+        this.r  = Math.random() * 1.6 + 0.3;
+        this.vy = -(Math.random() * 0.4 + 0.1);
+        this.vx = (Math.random() - 0.5) * 0.15;
+        this.alpha = Math.random() * 0.5 + 0.1;
+        this.color = Math.random() > 0.6
+          ? `rgba(13,110,253,${this.alpha})`
+          : `rgba(255,255,255,${this.alpha * 0.6})`;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.y < -10) this.reset(false);
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+    function drawGlow() {
+      const grd = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W * 0.55);
+      grd.addColorStop(0,   'rgba(13,110,253,0.07)');
+      grd.addColorStop(0.5, 'rgba(13,110,253,0.02)');
+      grd.addColorStop(1,   'rgba(4,4,10,0)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#04040a';
+      ctx.fillRect(0, 0, W, H);
+      drawGlow();
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    const DEFAULT_USERS = [
+      { email: 'user@example.com',    password: 'user1234', name: 'Default User', org: 'NBSC', role: 'user'    },
+      { email: 'manager@example.com', password: 'manager1', name: 'NBSC Manager', org: 'NBSC', role: 'manager' },
+      { email: 'admin@example.com',   password: 'admin123', name: 'NBSC Admin',   org: 'NBSC', role: 'admin'   },
+    ];
+
+    (function seedDefaults() {
+      const raw   = localStorage.getItem('nbsc_users');
+      let users   = raw ? JSON.parse(raw) : [];
+      let changed = false;
+      DEFAULT_USERS.forEach(def => {
+        if (!users.find(u => u.email === def.email)) {
+          users.push(def);
+          changed = true;
+        }
+      });
+      if (changed) localStorage.setItem('nbsc_users', JSON.stringify(users));
+    })();
+
+    function getUsers() {
+      const raw = localStorage.getItem('nbsc_users');
+      return raw ? JSON.parse(raw) : [...DEFAULT_USERS];
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('nbsc_users', JSON.stringify(users));
+    }
+
+    function switchForm(type) {
+      const alertBox = document.getElementById('alert-box');
+      alertBox.className = 'alert';
+
+      if (type === 'register') {
+        document.getElementById('login-form').style.display    = 'none';
+        document.getElementById('register-form').style.display = 'block';
+        document.getElementById('form-title').textContent = 'Create Account';
+      } else {
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('login-form').style.display    = 'block';
+        document.getElementById('form-title').textContent = 'Welcome Back';
+      }
+    }
+
+    function showAlert(type) {
+      const box = document.getElementById('alert-box');
+      box.className = `alert ${type}`;
+    }
