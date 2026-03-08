@@ -686,3 +686,14 @@ function notifyUser(request, status) {
     localStorage.setItem('userNotifications', JSON.stringify(notifs));
   } catch (e) { /* silent */ }
 }
+
+function checkForNewRequests() {
+  const flag = localStorage.getItem('managerShowRequests');
+  const ts   = localStorage.getItem('managerShowRequestsTimestamp');
+  if (flag === 'true' && ts) {
+    const age = (Date.now() - new Date(ts).getTime()) / 1000;
+    localStorage.removeItem('managerShowRequests');
+    localStorage.removeItem('managerShowRequestsTimestamp');
+    if (age < 30) setTimeout(() => navigateTo('requests'), 400);
+  }
+}
