@@ -697,3 +697,36 @@ function checkForNewRequests() {
     if (age < 30) setTimeout(() => navigateTo('requests'), 400);
   }
 }
+
+
+function setupEventListeners() {
+  document.getElementById('status-filter').addEventListener('change', e => {
+    statusFilter = e.target.value;
+    renderRequestsTable();
+  });
+
+  document.getElementById('pollution-filter').addEventListener('change', e => {
+    pollutionFilter = e.target.value;
+    renderBuildingsGrid();
+  });
+
+  document.getElementById('map-filter').addEventListener('change', e => {
+    mapFilter = e.target.value;
+    renderMapMarkers();
+  });
+
+  document.getElementById('building-form').addEventListener('submit', handleBuildingSubmit);
+
+  document.getElementById('building-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeBuildingModal();
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (!confirm('Are you sure you want to logout?')) return;
+    localStorage.removeItem('nbsc_session');
+    localStorage.removeItem('managerSession');
+    sessionStorage.removeItem('managerSession');
+    sessionStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+  });
+}
