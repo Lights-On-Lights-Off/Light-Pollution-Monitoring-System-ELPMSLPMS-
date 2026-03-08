@@ -121,3 +121,14 @@ function seedDefaultManager() {
   }
 }
 
+function checkManagerAuth() {
+  const raw = localStorage.getItem('nbsc_session');
+  if (!raw) { window.location.href = 'index.html'; return; }
+  try {
+    const session = JSON.parse(raw);
+    if (session.role !== 'manager') window.location.href = 'index.html';
+  } catch (e) {
+    window.location.href = 'index.html';
+  }
+}
+
