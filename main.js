@@ -1,46 +1,89 @@
-let map;
+// ── Campus Center & Bounds ──
+const CAMPUS_CENTER = [8.359999, 124.868103];
 
-// NBSC Campus Buildings Data
-const campusBuildings = [
-    {
+const CAMPUS_BOUNDS = L.latLngBounds(
+  [8.355000, 124.860000],
+  [8.365000, 124.876000]
+);
+
+// ── Pollution Level Colors ──
+
+// ── Capitalize first letter ──
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+const POLLUTION_COLORS = {
+  low:      "#22c55e",   // green
+  moderate: "#f59e0b",   // yellow-orange
+  high:     "#ef4444"    // red
+};
+
+// ── Campus Buildings (sensor data) ──
+let campusBuildings = [];
+
+function loadCampusBuildings() {
+  const savedBuildings = localStorage.getItem('nbscBuildings');
+  if (savedBuildings) {
+    campusBuildings = JSON.parse(savedBuildings);
+  } else {
+    campusBuildings = [
+      {
+        id: "B01",
         name: "SWDC Building",
         coordinates: [8.360309105794068, 124.86777742438035],
         pollutionLevel: "moderate",
-        description: "Main administrative offices"
-    },
- {
-        name: "Northern Bukidnon State College Covereed Court",
+        description: "Main administrative offices",
+        lux: 55,
+        online: true
+      },
+      {
+        id: "B02",
+        name: "Northern Bukidnon State College Covered Court",
         coordinates: [8.360122375785208, 124.86894170546891],
         pollutionLevel: "moderate",
-        description: "Main administrative offices"
-    },
-     {
-        name: "NBSC LIBRARY",
+        description: "Sports and events facility",
+        lux: 62,
+        online: true
+      },
+      {
+        id: "B03",
+        name: "NBSC Library",
         coordinates: [8.359264030617997, 124.86789449725583],
-        pollutionLevel: "moderate",
-        description: "Main administrative offices"
-    },
-     {
-        name: "NBSC CLINIC",
+        pollutionLevel: "low",
+        description: "Main library and study center",
+        lux: 18,
+        online: true
+      },
+      {
+        id: "B04",
+        name: "NBSC Clinic",
         coordinates: [8.359157605365368, 124.86817955256836],
         pollutionLevel: "moderate",
-        description: "Main administrative offices"
-    },
-     {
-        name: "BSBA BUILDING",
+        description: "Medical services and health center",
+        lux: 47,
+        online: true
+      },
+      {
+        id: "B05",
+        name: "BSBA Building",
         coordinates: [8.359096410833255, 124.86842964826772],
-        pollutionLevel: "moderate",
-        description: "Main administrative offices"
-    },
-     {
-        name: "ICS LABAORATORY",
+        pollutionLevel: "high",
+        description: "Business and administration classrooms",
+        lux: 130,
+        online: true
+      },
+      {
+        id: "B06",
+        name: "ICS Laboratory",
         coordinates: [8.359221460529115, 124.86905085372219],
         pollutionLevel: "moderate",
-        description: "Main administrative offices"
-    },
+        description: "Computer science and IT laboratory",
+        lux: 70,
+        online: true
+      }
+    ];
+  }
+}
 
-    // Add more buildings here...
-];
+loadCampusBuildings();
 
 document.addEventListener('DOMContentLoaded', function() {
     showHomePage();
