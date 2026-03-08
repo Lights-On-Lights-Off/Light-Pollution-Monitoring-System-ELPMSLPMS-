@@ -438,3 +438,34 @@
         btn.innerHTML = btnId === 'login-btn' ? 'Login' : 'Create Account';
       }
     }
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      setLoading('login-btn', true);
+
+      setTimeout(() => {
+        const users = getUsers();
+        const match = users.find(u => u.email === email && u.password === password);
+
+        if (match) {
+          localStorage.setItem('nbsc_session', JSON.stringify({ email: match.email, name: match.name, role: match.role || 'user' }));
+          showAlert('success');
+          let dest = 'user.html';
+          if (match.role === 'manager') dest = 'manager.html';
+          if (match.role === 'admin')   dest = 'admin-app/admin.html';
+          setTimeout(() => { window.location.href = dest; }, 1200);
+        } else {
+          showAlert('error');
+          document.getElementById('login-email').classList.add('error-field');
+          document.getElementById('login-password').classList.add('error-field');
+          setTimeout(() => {
+            document.getElementById('login-email').classList.remove('error-field');
+            document.getElementById('login-password').classList.remove('error-field');
+          }, 1500);
+          setLoading('login-btn', false);
+        }
+      }, 800);
+    });
