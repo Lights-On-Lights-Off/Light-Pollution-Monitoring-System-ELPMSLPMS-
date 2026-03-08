@@ -803,3 +803,29 @@
           </div>
           <input type="hidden" id="building-lat" />
           <input type="hidden" id="building-lng" />
+          </div>
+        <div class="form-group">
+          <label>Pollution Level *</label>
+          <select id="pollution-level" required>
+            <option value="low">Low</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="building-description" placeholder="Brief description of the building…"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save Building</button>
+          <button type="button" class="btn btn-ghost" onclick="closeBuildingModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="manager.js"></script>
+</body>
+</html>
