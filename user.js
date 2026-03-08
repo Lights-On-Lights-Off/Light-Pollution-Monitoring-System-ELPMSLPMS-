@@ -311,3 +311,163 @@ class UserDashboard {
     this.prefillForm();
     setTimeout(() => this.switchTab('requests'), 1000);
   }
+
+  // Notifications
+  loadNotifications() {
+    const all = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+    this.notifications = all.filter(n => n.email === this.currentUser.email);
+    this.renderNotifications();
+  }
+
+  renderNotifications() {
+    const container = document.getElementById('notifications-list');
+    if (!container) return;
+
+    const items = this.notifications.length
+      ? this.notifications.slice(0, 10)
+      : [{ message: `Welcome back, ${this.currentUser.name || 'User'}! Your dashboard is ready.`, timestamp: new Date().toISOString() }];
+
+    container.innerHTML = items.map(n => `
+      <div class="notif-item">
+        <div class="notif-dot"></div>
+        <div>
+          <div class="notif-text">${n.message}</div>
+          <div class="notif-time">${this.timeAgo(n.timestamp)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Map
+  initMapTab() {
+    const el = document.getElementById('user-campus-map');
+    if (!el || this.map) return;
+
+    const center = [8.359999, 124.868103];
+    const bounds = L.latLngBounds([8.355000, 124.860000], [8.365000, 124.876000]);
+
+    this.map = L.map('user-campus-map', {
+      center, zoom: 18,
+      minZoom: 16, maxZoom: 20,
+      maxBounds: bounds, maxBoundsViscosity: 1.0
+    });
+
+    const colored = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(this.map);
+
+    const satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { maxZoom: 19 }
+    );
+
+    L.control.layers({ 'Colored Map': colored, 'Satellite View': satellite }, null, { position: 'bottomright' }).addTo(this.map);
+    L.rectangle(bounds, { color: '#0d6efd', weight: 2, fillOpacity: 0.05 })
+      .addTo(this.map).bindPopup('Northern Bukidnon State College');
+
+    this.loadCampusBuildings();
+    this.renderMapMarkers();
+    this.bindMapControls();
+  }
+
+  loadCampusBuildings() {
+    const saved = localStorage.getItem('nbscBuildings');
+    if (saved) { this.campusBuildings = JSON.parse(saved); return; }
+    this.campusBuildings = [
+      { id:'B01', name:'SWDC Building',     coordinates:[8.360309105794068, 124.86777742438035], pollutionLevel:'moderate', description:'Main administrative offices',           lux:55,  online:true },
+      { id:'B02', name:'NBSC Covered Court', coordinates:[8.360122375785208, 124.86894170546891], pollutionLevel:'moderate', description:'Sports and events facility',           lux:62,  online:true },
+      { id:'B03', name:'NBSC Library',       coordinates:[8.359264030617997, 124.86789449725583], pollutionLevel:'low',      description:'Main library and study center',        lux:18,  online:true },
+      { id:'B04', name:'NBSC Clinic',        coordinates:[8.359157605365368, 124.86817955256836], pollutionLevel:'moderate', description:'Medical services and health center',    lux:47,  online:true },
+      { id:'B05', name:'BSBA Building',      coordinates:[8.359096410833255, 124.86842964826772], pollutionLevel:'high',     description:'Business and administration classrooms', lux:130, online:true },
+      { id:'B06', name:'ICS Laboratory',     coordinates:[8.359221460529115, 124.86905085372219], pollutionLevel:'moderate', description:'Computer science and IT laboratory',    lux:70,  online:true }
+    ];
+  }
+
+  renderMapMarkers(filter = 'all') {
+    this.mapMarkers.forEach(m => this.map.removeLayer(m));
+    this.mapMarkers = [];
+
+    this.campusBuildings
+      .filter(b => filter === 'all' || b.pollutionLevel === filter)
+      .forEach(b => {
+        const color  = POLLUTION_COLORS[b.pollutionLevel];
+        const marker = L.circleMarker(b.coordinates, {
+          radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9
+        }).addTo(this.map);
+
+        marker.bindPopup(`
+          <div style="font-family:'Outfit',sans-serif;min-width:170px;">
+            <div style="font-weight:700;font-size:0.92rem;margin-bottom:6px;">${b.name}</div>
+            <div style="margin-bottom:4px;">
+              <span style="color:#888;font-size:0.75rem;">Pollution Level:</span>
+              <span style="display:inline-block;margin-left:6px;padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:600;background:${color}33;color:${color};border:1px solid ${color}66;">
+                ${cap(b.pollutionLevel)}
+              </span>
+            </div>
+            <div style="font-size:0.78rem;color:#777;margin-top:4px;">${b.description}</div>
+          </div>
+        `);
+        this.mapMarkers.push(marker);
+      });
+  }
+
+  bindMapControls() {
+    document.getElementById('user-map-filter')?.addEventListener('change', e => {
+      this.renderMapMarkers(e.target.value);
+    });
+    document.getElementById('refresh-user-map-btn')?.addEventListener('click', () => {
+      this.loadCampusBuildings();
+      const f = document.getElementById('user-map-filter')?.value || 'all';
+      this.renderMapMarkers(f);
+    });
+    document.getElementById('reset-user-map-btn')?.addEventListener('click', () => {
+      this.map?.setView([8.359999, 124.868103], 18);
+    });
+  }
+
+  // Event Bindings
+  bindEvents() {
+    const pill     = document.getElementById('userPillToggle');
+    const dropdown = document.getElementById('userDropdown');
+    pill?.addEventListener('click', e => { e.stopPropagation(); dropdown?.classList.toggle('open'); });
+    document.addEventListener('click', () => dropdown?.classList.remove('open'));
+
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('nbsc_session');
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('data-request-form')?.addEventListener('submit', e => this.submitRequest(e));
+  }
+
+  // Helpers
+  formatLocation(loc) {
+    const map = {
+      'NBSC LIBRARY': 'NBSC Library', 'NBSC CLINIC': 'NBSC Clinic',
+      'BSBA BUILDING': 'BSBA Building', 'ICS LABORATORY': 'ICS Laboratory',
+      'SWDC Building': 'SWDC Building',
+      'Northern Bukidnon State College Covered Court': 'Covered Court'
+    };
+    return map[loc] || loc || '—';
+  }
+
+  formatDateRange(s, e) {
+    if (!s && !e) return '—';
+    const fmt = d => new Date(d).toLocaleDateString();
+    if (s && e) return `${fmt(s)} → ${fmt(e)}`;
+    return fmt(s || e);
+  }
+
+  timeAgo(ts) {
+    const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
+    if (diff < 60)    return 'Just now';
+    if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  }
+}
+
+// Boot
+document.addEventListener('DOMContentLoaded', () => {
+  window.dashboard = new UserDashboard();
+});
