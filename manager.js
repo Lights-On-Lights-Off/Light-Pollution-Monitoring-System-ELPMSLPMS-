@@ -56,3 +56,39 @@
   }
   loop();
 })();
+
+// Constants
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+const POLLUTION_COLORS = { low: '#22c55e', moderate: '#f59e0b', high: '#ef4444' };
+
+// Data
+let requests        = [];
+let deletedRequests = [];
+
+let buildings = [
+  { id: 1, name: 'SWDC Building',  lat: 8.360309, lng: 124.867777, pollutionLevel: 'high',     description: 'Main administrative offices' },
+  { id: 2, name: 'NBSC Library',   lat: 8.359264, lng: 124.867894, pollutionLevel: 'moderate', description: 'Main library and study center' },
+  { id: 3, name: 'NBSC Clinic',    lat: 8.359158, lng: 124.868179, pollutionLevel: 'low',      description: 'Medical services and health center' },
+  { id: 4, name: 'BSBA Building',  lat: 8.359096, lng: 124.868429, pollutionLevel: 'moderate', description: 'Business and administration classrooms' },
+  { id: 5, name: 'ICS Laboratory', lat: 8.359221, lng: 124.869050, pollutionLevel: 'high',     description: 'Computer science and IT laboratory' },
+  { id: 6, name: 'Covered Court',  lat: 8.360122, lng: 124.868941, pollutionLevel: 'low',      description: 'Sports and events facility' },
+  { id: 7, name: 'Cafeteria',      lat: 8.358900, lng: 124.868200, pollutionLevel: 'moderate', description: 'Student dining facility' },
+];
+
+// State
+let currentSection    = 'dashboard';
+let statusFilter      = 'all';
+let pollutionFilter   = 'all';
+let mapFilter         = 'all';
+let editingBuildingId = null;
+
+// Map
+let adminMap;
+let adminMapMarkers    = [];
+let adminSatelliteLayer;
+let adminStandardLayer;
+let adminCurrentTile;
+
+// Location picker (building modal)
+let locationPickerMap    = null;
+let locationPickerMarker = null;
