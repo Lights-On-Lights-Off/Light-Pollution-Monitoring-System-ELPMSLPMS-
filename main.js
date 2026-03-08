@@ -305,8 +305,76 @@ setInterval(() => {
     if (lightTrendChart.data.datasets[index].data.length > 10) {
       lightTrendChart.data.datasets[index].data.shift();
     }
+lightMarkers[building.id].setStyle({
+      fillColor: POLLUTION_COLORS[building.pollutionLevel]
+    });
+    lightMarkers[building.id].setPopupContent(buildPopupHTML(building));
 
-    // Update marker color and popup
-window.addEventListener('resize', function() {
-    if (map) map.invalidateSize();
+    addLightLogEntry(building);
+  });
+
+  lightTrendChart.update();
+  updateKPIsAndStatusChart();
+}, 5000);
+
+// ── Session / Auth ──
+function getSession() {
+  const raw = localStorage.getItem('nbsc_session');
+  return raw ? JSON.parse(raw) : null;
+}
+
+function updateNavForSession() {
+  const dropdown = document.getElementById("userDropdown");
+  if (!dropdown) return;
+
+  // index.html nav always shows the default state — login state does not affect it
+  dropdown.innerHTML = `
+    <div class="user-dropdown-header">
+      <span class="user-status-dot"></span> USER
+    </div>
+    <a href="login.html" class="user-dropdown-item">Login Here</a>
+    <a href="login.html#register" class="user-dropdown-item">Register Here</a>
+  `;
+}
+
+// ── User Dropdown Toggle ──
+const userMenuToggle = document.getElementById("userMenuToggle");
+const userDropdown = document.getElementById("userDropdown");
+
+userMenuToggle.addEventListener("click", (e) => {
+  e.stopPropagation();
+  userDropdown.classList.toggle("open");
+});
+
+document.addEventListener("click", () => {
+  userDropdown.classList.remove("open");
+});
+
+// Init nav state on load
+updateNavForSession();
+
+// ── Filter Dropdown ──
+const pollutionFilter = document.getElementById("pollutionFilter");
+
+pollutionFilter.addEventListener("change", () => {
+  const val = pollutionFilter.value;
+
+  campusBuildings.forEach(building => {
+    const marker = lightMarkers[building.id];
+    if (val === "all" || building.pollutionLevel === val) {
+      marker.addTo(map);
+    } else {
+      map.removeLayer(marker);
+    }
+  });
+});
+
+// ── Request Data Button ── redirects to login if not authenticated
+document.getElementById("requestDataBtn").addEventListener("click", () => {
+  const session = getSession();
+  if (session) {
+    alert(`You are logged in as ${session.name || session.email}. Data request feature coming soon.`);
+  } else {
+    window.location.href = "login.html";
+  }
 });
