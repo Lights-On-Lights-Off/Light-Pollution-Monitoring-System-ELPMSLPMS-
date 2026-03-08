@@ -204,3 +204,73 @@ function renderActivityFeed() {
     `;
   }).join('');
 } 
+
+function renderUsersTable() {
+  const filter = document.getElementById('role-filter').value;
+  let   users  = getUsers().filter(u => u.role !== 'admin');
+  if (filter !== 'all') users = users.filter(u => u.role === filter);
+
+  const tbody = document.getElementById('users-tbody');
+  const empty = document.getElementById('users-empty');
+
+  if (!users.length) {
+    tbody.innerHTML     = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><strong>${escHtml(u.name || '—')}</strong></td>
+      <td style="color:var(--muted);">${escHtml(u.email)}</td>
+      <td><span class="badge ${u.role}">${cap(u.role)}</span></td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openRoleModal('${escHtml(u.email)}')">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+            </svg>
+            Edit Role
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteUser('${escHtml(u.email)}')">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+              <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+            </svg>
+            Delete
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+let editingEmail = null;
+
+function openRoleModal(email) {
+  const user = getUsers().find(u => u.email === email);
+  if (!user) return;
+  editingEmail = email;
+  document.getElementById('role-modal-name').textContent = user.name || user.email;
+  document.getElementById('role-select').value = user.role;
+  document.getElementById('role-modal').classList.add('open');
+}
+
+function closeRoleModal() {
+  document.getElementById('role-modal').classList.remove('open');
+  editingEmail = null;
+}
+
+function saveRole() {
+  if (!editingEmail) return;
+  const users = getUsers();
+  const idx   = users.findIndex(u => u.email === editingEmail);
+  if (idx === -1) return;
+  users[idx].role = document.getElementById('role-select').value;
+  saveUsers(users);
+  closeRoleModal();
+  updateStats();
+  renderDashboard();
+  renderUsersTable();
+} 
