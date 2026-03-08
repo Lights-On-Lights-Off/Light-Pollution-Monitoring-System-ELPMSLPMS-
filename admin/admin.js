@@ -91,3 +91,24 @@ function seedDefaultAdmin() {
     localStorage.setItem('nbsc_users', JSON.stringify(users));
   }
 }
+
+const PAGE_LABELS = {
+  dashboard: { title: 'Dashboard',        sub: 'System overview' },
+  users:     { title: 'Users Management', sub: 'Manage accounts and roles' },
+  settings:  { title: 'System Settings',  sub: 'Storage and data controls' },
+};
+
+function navigate(btn) {
+  const section = btn.dataset.section;
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`section-${section}`).classList.add('active');
+
+  document.getElementById('page-title').textContent = PAGE_LABELS[section].title;
+  document.getElementById('topbar-sub').textContent = PAGE_LABELS[section].sub;
+
+  if (section === 'settings') renderStorageUsage();
+}  
