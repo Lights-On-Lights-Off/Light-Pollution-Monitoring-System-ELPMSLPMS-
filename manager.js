@@ -593,3 +593,66 @@ function renderMapMarkers() {
 }
 
 
+function renderRecycleBin() {
+  const tbody = document.getElementById('recycle-bin-tbody');
+  const table = document.getElementById('recycle-bin-table');
+  const empty = document.getElementById('empty-recycle-message');
+
+  if (!deletedRequests.length) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  table.style.display = '';
+  empty.style.display = 'none';
+
+  tbody.innerHTML = deletedRequests.map(r => `
+    <tr>
+      <td><span style="font-family:monospace;font-size:0.82rem;color:var(--accent);">${escHtml(r.id)}</span></td>
+      <td><strong>${escHtml(r.name)}</strong></td>
+      <td style="color:var(--muted);">${escHtml(r.email)}</td>
+      <td style="color:var(--muted);">${escHtml(r.date)}</td>
+      <td><span class="badge ${r.status}">${cap(r.status)}</span></td>
+      <td style="color:var(--muted);white-space:nowrap;">${formatDate(r.deletedOn)}</td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-sm btn-success" onclick="restoreRequest('${r.id}')">
+            <svg width="11" height="11" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>
+            Restore
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="permanentlyDeleteRequest('${r.id}')">
+            <svg width="11" height="11" fill="currentColor" viewBox="0 0 16 16"><path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Z"/></svg>
+            Delete Forever
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function restoreRequest(id) {
+  const r = deletedRequests.find(r => r.id === id);
+  if (!r) return;
+  const { deletedOn, ...restored } = r;
+  requests.push(restored);
+  deletedRequests = deletedRequests.filter(r => r.id !== id);
+  saveRequests();
+  updateQuickStats();
+  renderRecycleBin();
+}
+
+function permanentlyDeleteRequest(id) {
+  const r = deletedRequests.find(r => r.id === id);
+  if (!r) return;
+  if (!confirm(`Permanently delete ${r.name}'s request? This cannot be undone.`)) return;
+  deletedRequests = deletedRequests.filter(r => r.id !== id);
+  renderRecycleBin();
+}
+
+function emptyRecycleBin() {
+  if (!deletedRequests.length) return;
+  if (!confirm(`Permanently delete all ${deletedRequests.length} items in the recycle bin? This cannot be undone.`)) return;
+  deletedRequests = [];
+  renderRecycleBin();
+}
