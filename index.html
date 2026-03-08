@@ -9,15 +9,37 @@
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-     <!-- Home Page -->
-    <div id="home-page" class="page active">
-        <header class="header">
-            <div class="header-content">
-                <h1>NBSC Light Pollution Monitoring System</h1>
-                <p class="tagline">Visualizing Campus Light Pollution for Better Management</p>
-            </div>
-        </header>
+    <body>
 
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-badge"></span>
+            Environmental Light Pollution Monitoring System
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-btn active" onclick="showSection('home', this)">HOME</a>
+            <a href="#" class="nav-btn" onclick="showSection('about', this)">ABOUT</a>
+            <a href="#" class="nav-btn" onclick="showSection('purpose', this)">PURPOSE</a>
+            <div class="user-menu-wrapper">
+                <button class="user-icon-btn" id="userMenuToggle" aria-label="User menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                        <path d="M2 14s-1 0-1-1 1-4 7-4 7 3 7 4-1 1-1 1H2z"/>
+                    </svg>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-dropdown-header">
+                        <span class="user-status-dot"></span> USER
+                    </div>
+                    <a href="#" class="user-dropdown-item">Login Here</a>
+                    <a href="#" class="user-dropdown-item">Register Here</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    
         <main class="main-content">
             <section class="about-section">
                 <h2>About the System</h2>
