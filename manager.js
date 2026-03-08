@@ -656,3 +656,33 @@ function emptyRecycleBin() {
   deletedRequests = [];
   renderRecycleBin();
 }
+
+
+function loadRequests() {
+  try {
+    const raw = localStorage.getItem('nbscDataRequests');
+    if (raw) requests = JSON.parse(raw);
+  } catch (e) { requests = []; }
+  renderRequestsTable();
+  updateQuickStats();
+}
+
+function saveRequests() {
+  localStorage.setItem('nbscDataRequests', JSON.stringify(requests));
+}
+
+function notifyUser(request, status) {
+  try {
+    const notifs = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+    notifs.push({
+      id:        'NOTIF-' + Date.now(),
+      email:     request.email,
+      title:     status === 'approved' ? 'Request Approved ✅' : 'Request Denied ❌',
+      message:   `Your data request (${request.id}) has been ${status} by the manager.`,
+      type:      status,
+      timestamp: new Date().toISOString(),
+      read:      false,
+    });
+    localStorage.setItem('userNotifications', JSON.stringify(notifs));
+  } catch (e) { /* silent */ }
+}
