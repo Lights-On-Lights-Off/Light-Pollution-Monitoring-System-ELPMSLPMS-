@@ -54,3 +54,54 @@
   }
   loop();
 })();
+
+// Capitalize helper
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+
+const POLLUTION_COLORS = {
+  low:      '#22c55e',
+  moderate: '#f59e0b',
+  high:     '#ef4444'
+};
+
+// User Dashboard Class
+class UserDashboard {
+  constructor() {
+    this.currentUser     = null;
+    this.requests        = [];
+    this.notifications   = [];
+    this.campusBuildings = [];
+    this.map             = null;
+    this.mapMarkers      = [];
+    this.currentTab      = 'map';
+    this.init();
+  }
+
+  init() {
+    this.checkAuth();
+    this.initTabs();
+    this.bindEvents();
+    this.loadUserData();
+    this.initMapTab();
+  }
+
+  // Auth
+  checkAuth() {
+    const raw = localStorage.getItem('nbsc_session');
+    if (!raw) { window.location.href = 'index.html'; return; }
+    this.currentUser = JSON.parse(raw);
+  }
+
+  // Nav UI
+  updateNavUI() {
+    if (!this.currentUser) return;
+    const name    = this.currentUser.name  || this.currentUser.email.split('@')[0];
+    const email   = this.currentUser.email || '';
+    const initial = name.charAt(0).toUpperCase();
+
+    document.getElementById('avatarInitial').textContent = initial;
+    document.getElementById('pillName').textContent      = name;
+    document.getElementById('pillEmail').textContent     = email;
+    document.getElementById('dropdownName').textContent  = name;
+    document.getElementById('dropdownEmail').textContent = email;
+  }
