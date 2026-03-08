@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — NBSC Light Pollution Monitoring</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./admin.css" />
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-dot"></div>
+      <div class="brand-texts">
+        <h2>NBSC Admin</h2>
+        <p>System Administrator</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-lbl">Overview</div>
+      <button class="nav-item active" data-section="dashboard" onclick="navigate(this)">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.389.389 0 0 0-.527-.02L9.373 8.3a.5.5 0 0 0 .623.779l2.344-1.913a.44.44 0 0 0 .062-.68z"/>
+          <path fill-rule="evenodd" d="M8 1a9 9 0 1 0 0 18A9 9 0 0 0 8 1zm0 1a8 8 0 1 1 0 16A8 8 0 0 1 8 2z"/>
+        </svg>
+        Dashboard
+      </button>
+
+      <div class="nav-section-lbl" style="margin-top:8px;">Management</div>
+      <button class="nav-item" data-section="users" onclick="navigate(this)">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+        </svg>
+        Users Management
+      </button>
+
+      <div class="nav-section-lbl" style="margin-top:8px;">System</div>
+      <button class="nav-item" data-section="settings" onclick="navigate(this)">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+          <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.47l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+        </svg>
+        System Settings
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" id="logoutBtn">
+        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+          <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+        </svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <div id="page-title">Dashboard</div>
+        <div class="topbar-sub" id="topbar-sub">System overview</div>
+      </div>
+      <div class="admin-pill">
+        <div class="admin-avatar" id="admin-avatar">AD</div>
+        <span id="admin-name">Admin</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+
+      <!-- Stat Cards -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon clr-blue">
+            <svg width="20" height="20" fill="#0d6efd" viewBox="0 0 16 16">
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="stat-total-users">0</div>
+            <div class="stat-lbl">Total Users</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon clr-orange">
+            <svg width="20" height="20" fill="#f59e0b" viewBox="0 0 16 16">
+              <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="stat-total-managers">0</div>
+            <div class="stat-lbl">Managers</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon clr-green">
+            <svg width="20" height="20" fill="#22c55e" viewBox="0 0 16 16">
+              <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="stat-total-requests">0</div>
+            <div class="stat-lbl">Total Requests</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon clr-red">
+            <svg width="20" height="20" fill="#ef4444" viewBox="0 0 16 16">
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="stat-pending">0</div>
+            <div class="stat-lbl">Pending Requests</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD SECTION -->
+      <div class="section active" id="section-dashboard">
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-head">
+              <h3>Recent Accounts</h3>
+              <button class="btn btn-ghost btn-sm" onclick="navigate(document.querySelector('[data-section=users]'))">View All</button>
+            </div>
+            <div class="card-body" id="recent-users-list">
+              <div class="empty-state"><div class="empty-icon">👤</div><p>No accounts yet</p></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <h3>Manager Activity</h3>
+              <span class="badge info" id="activity-count" style="background:rgba(13,110,253,0.12);color:#60a5fa;border:1px solid rgba(13,110,253,0.3);">0 events</span>
+            </div>
+            <div class="card-body">
+              <div class="activity-feed" id="activity-feed">
+                <div class="empty-state"><div class="empty-icon">📋</div><p>No manager activity yet</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS MANAGEMENT SECTION -->
+      <div class="section" id="section-users">
+        <div class="card">
+          <div class="card-head">
+            <h3>All Accounts</h3>
+            <div class="card-head-actions">
+              <select class="filter-select" id="role-filter" onchange="renderUsersTable()">
+                <option value="all">All Roles</option>
+                <option value="user">User</option>
+                <option value="manager">Manager</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+            <div id="users-empty" class="empty-state" style="display:none;">
+              <div class="empty-icon">👥</div>
+              <p>No accounts found</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM SETTINGS SECTION -->
+      <div class="section" id="section-settings">
+        <div class="card">
+          <div class="card-head"><h3>System Settings</h3></div>
+          <div class="settings-grid">
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Storage Usage</h4>
+                <p>Current localStorage utilization across all system data.</p>
+                <div class="storage-bar-wrap">
+                  <div class="storage-bar-bg">
+                    <div class="storage-bar-fill" id="storage-bar" style="width:0%"></div>
+                  </div>
+                  <div class="storage-label" id="storage-label">Calculating…</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Clear All Requests</h4>
+                <p>Permanently delete all data requests from the system. This cannot be undone.</p>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="confirmClearRequests()" style="flex-shrink:0;">Clear</button>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Clear Notifications</h4>
+                <p>Remove all user notifications stored in the system.</p>
+              </div>
+              <button class="btn btn-warn btn-sm" onclick="confirmClearNotifications()" style="flex-shrink:0;">Clear</button>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Reset Buildings to Default</h4>
+                <p>Restore the campus buildings list back to the original default configuration.</p>
+              </div>
+              <button class="btn btn-warn btn-sm" onclick="confirmResetBuildings()" style="flex-shrink:0;">Reset</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </main>
+</div><!-- /shell -->
+
+<!-- EDIT ROLE MODAL -->
+<div class="modal-overlay" id="role-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Edit Role</h3>
+      <button class="modal-close" onclick="closeRoleModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Change the role for <strong id="role-modal-name">—</strong>.</p>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="role-select">
+          <option value="user">User</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveRole()">Save</button>
+        <button class="btn btn-ghost" onclick="closeRoleModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="confirm-title">Confirm</h3>
+      <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message">Are you sure?</p>
+      <div class="form-actions">
+        <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmAction()">Confirm</button>
+        <button class="btn btn-ghost" onclick="closeConfirmModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./admin.js"></script>
+</body>
+</html>
