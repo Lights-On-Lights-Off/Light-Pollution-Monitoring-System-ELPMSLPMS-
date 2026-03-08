@@ -511,3 +511,85 @@ function handleBuildingSubmit(e) {
   if (adminMap) renderMapMarkers();
   closeBuildingModal();
 }
+
+
+function initManagerMap() {
+  if (adminMap) return;
+
+  adminMap = L.map('manager-campus-map', {
+    center:     [8.3595, 124.8675],
+    zoom:       18,
+    minZoom:    14,
+    maxZoom:    19,
+    zoomControl: true,
+  });
+
+  adminSatelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles © Esri', maxZoom: 19 }
+  );
+  adminStandardLayer = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '© OpenStreetMap contributors', maxZoom: 19 }
+  );
+
+  adminCurrentTile = adminStandardLayer;
+  adminCurrentTile.addTo(adminMap);
+
+  const LayerToggle = L.Control.extend({
+    options: { position: 'bottomright' },
+    onAdd() {
+      const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+      const btn = L.DomUtil.create('button', '', div);
+      btn.innerHTML = '🛰️';
+      btn.title     = 'Toggle satellite/standard';
+      Object.assign(btn.style, {
+        background: 'white', border: '2px solid #ccc', borderRadius: '4px',
+        width: '30px', height: '30px', fontSize: '15px', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      });
+      btn.addEventListener('click', () => {
+        adminMap.removeLayer(adminCurrentTile);
+        adminCurrentTile = adminCurrentTile === adminStandardLayer
+          ? adminSatelliteLayer : adminStandardLayer;
+        adminCurrentTile.addTo(adminMap);
+        btn.innerHTML = adminCurrentTile === adminSatelliteLayer ? '🗺️' : '🛰️';
+      });
+      L.DomEvent.disableClickPropagation(div);
+      return div;
+    }
+  });
+  adminMap.addControl(new LayerToggle());
+
+  renderMapMarkers();
+}
+
+function renderMapMarkers() {
+  if (!adminMap) return;
+
+  adminMapMarkers.forEach(m => adminMap.removeLayer(m));
+  adminMapMarkers = [];
+
+  const list = mapFilter === 'all' ? buildings : buildings.filter(b => b.pollutionLevel === mapFilter);
+
+  list.forEach(b => {
+    const color  = POLLUTION_COLORS[b.pollutionLevel] || '#6b7280';
+    const marker = L.circleMarker([b.lat, b.lng], {
+      radius: 14, fillColor: color, color: '#fff',
+      weight: 2, opacity: 1, fillOpacity: 0.85,
+    }).addTo(adminMap);
+
+    marker.bindPopup(`
+      <div style="min-width:200px;font-family:'Outfit',sans-serif;">
+        <div style="font-weight:700;font-size:14px;color:#1e293b;margin-bottom:6px;">${escHtml(b.name)}</div>
+        <div style="font-size:13px;color:#475569;margin-bottom:4px;">
+          Pollution: <span style="color:${color};font-weight:600;">${cap(b.pollutionLevel)}</span>
+        </div>
+        <div style="font-size:12px;color:#64748b;">${escHtml(b.description || '')}</div>
+      </div>
+    `);
+    adminMapMarkers.push(marker);
+  });
+}
+
+
