@@ -197,3 +197,117 @@ class UserDashboard {
       </div>
     `).join('');
   }
+
+  downloadData(requestId) {
+    const r = this.requests.find(req => req.id === requestId);
+    if (!r || r.status !== 'approved') return;
+
+    const locationLabel = this.formatLocation(r.location);
+    const building = this.campusBuildings.find(b =>
+      b.name.toLowerCase() === locationLabel.toLowerCase() ||
+      b.name.toLowerCase().includes(locationLabel.toLowerCase()) ||
+      locationLabel.toLowerCase().includes(b.name.toLowerCase())
+    ) || this.campusBuildings.find(b =>
+      r.location && (
+        r.location.toLowerCase().includes(b.name.toLowerCase()) ||
+        b.name.toLowerCase().includes(r.location.toLowerCase())
+      )
+    );
+
+    const now     = new Date();
+    const rows    = [];
+    const headers = ['Timestamp', 'Building', 'Location (Lat)', 'Location (Lng)', 'Lux Reading', 'Pollution Level', 'Status', 'Data Type'];
+    rows.push(headers.join(','));
+
+    if (building) {
+      const start     = r.startDate ? new Date(r.startDate) : new Date(now - 7 * 86400000);
+      const end       = r.endDate   ? new Date(r.endDate)   : now;
+      const diffMs    = end - start;
+      const intervals = Math.min(Math.floor(diffMs / 3600000), 168);
+
+      for (let i = 0; i <= intervals; i++) {
+        const ts    = new Date(start.getTime() + (i / intervals) * diffMs);
+        const lux   = Math.max(5, Math.min(150, building.lux + (Math.random() - 0.5) * 20)).toFixed(1);
+        const level = parseFloat(lux) < 30 ? 'Low' : parseFloat(lux) < 80 ? 'Moderate' : 'High';
+        const [lat, lng] = Array.isArray(building.coordinates)
+          ? building.coordinates
+          : [building.lat, building.lng];
+        rows.push([
+          ts.toISOString(),
+          `"${building.name}"`,
+          lat, lng, lux, level,
+          building.online ? 'Online' : 'Offline',
+          r.dataType || 'Light Pollution'
+        ].join(','));
+      }
+    } else {
+      rows.push([
+        now.toISOString(),
+        `"${r.location || 'Unknown'}"`,
+        '—', '—', '—', '—', '—',
+        r.dataType || 'Light Pollution'
+      ].join(','));
+    }
+
+    const meta = [
+      `# NBSC Light Pollution Monitoring System`,
+      `# Request ID: ${r.id}`,
+      `# Requested by: ${r.userName || r.email}`,
+      `# Organization: ${r.organization || '—'}`,
+      `# Location: ${locationLabel}`,
+      `# Data Type: ${r.dataType || '—'}`,
+      `# Date Range: ${this.formatDateRange(r.startDate, r.endDate)}`,
+      `# Purpose: ${r.purpose || '—'}`,
+      `# Generated: ${now.toISOString()}`,
+      `#`,
+    ].join('\n');
+
+    const csv  = meta + '\n' + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `NBSC_LightData_${locationLabel.replace(/\s+/g, '_')}_${r.id}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  deleteRequest(id) {
+    if (!confirm('Delete this request? This cannot be undone.')) return;
+    this.requests = this.requests.filter(r => r.id !== id);
+    this.saveRequests();
+    this.renderRequests();
+  }
+
+  saveRequests() {
+    const all    = JSON.parse(localStorage.getItem('nbscDataRequests') || '[]');
+    const others = all.filter(r => r.email !== this.currentUser.email);
+    localStorage.setItem('nbscDataRequests', JSON.stringify([...others, ...this.requests]));
+  }
+
+  submitRequest(e) {
+    e.preventDefault();
+    const fd  = new FormData(e.target);
+    const req = {
+      id:              'REQ-' + Date.now(),
+      email:           this.currentUser.email,
+      userName:        fd.get('fullName'),
+      organization:    fd.get('organization'),
+      location:        fd.get('location'),
+      dataType:        fd.get('dataType'),
+      purpose:         fd.get('purpose'),
+      startDate:       fd.get('startDate'),
+      endDate:         fd.get('endDate'),
+      additionalNotes: fd.get('additionalNotes'),
+      submittedDate:   new Date().toISOString(),
+      status:          'pending'
+    };
+    this.requests.push(req);
+    this.saveRequests();
+    this.renderRequests();
+    e.target.reset();
+    this.prefillForm();
+    setTimeout(() => this.switchTab('requests'), 1000);
+  }
