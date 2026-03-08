@@ -350,3 +350,68 @@ function confirmResetBuildings() {
     }
   );
 } 
+
+let pendingConfirmAction = null;
+
+function showConfirm(title, message, btnClass, action) {
+  document.getElementById('confirm-title').textContent  = title;
+  document.getElementById('confirm-message').innerHTML  = message;
+  document.getElementById('confirm-ok-btn').className   = btnClass;
+  pendingConfirmAction = action;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+function confirmAction() {
+  if (typeof pendingConfirmAction === 'function') pendingConfirmAction();
+  closeConfirmModal();
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirm-modal').classList.remove('open');
+  pendingConfirmAction = null;
+  pendingDeleteEmail   = null;
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      closeRoleModal();
+      closeConfirmModal();
+    }
+  });
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  if (!confirm('Are you sure you want to logout?')) return;
+  localStorage.removeItem('nbsc_session');
+  window.location.href = '../index.html';
+});
+
+// Utils
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;')
+    .replace(/'/g,  '&#039;');
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+    + ' ' + d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Init
+seedDefaultAdmin();
+checkAdminAuth();
+loadAdminProfile();
+updateStats();
+renderDashboard();
+renderUsersTable();
+ 
