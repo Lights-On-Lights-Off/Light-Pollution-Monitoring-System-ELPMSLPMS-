@@ -132,3 +132,16 @@ function checkManagerAuth() {
   }
 }
 
+function loadManagerProfile() {
+  const raw = localStorage.getItem('nbsc_session');
+  if (!raw) return;
+  try {
+    const session  = JSON.parse(raw);
+    const name     = session.name || 'Manager';
+    const initials = name.split(' ').map(w => w[0].toUpperCase()).slice(0, 2).join('');
+    document.getElementById('manager-avatar').textContent = initials;
+    document.getElementById('manager-name').textContent   = name;
+  } catch (e) { /* silent */ }
+}
+
+
