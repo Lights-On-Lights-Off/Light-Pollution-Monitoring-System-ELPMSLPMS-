@@ -280,3 +280,36 @@
           <p><a href="index.html">← Back to Dashboard</a></p>
         </div>
       </form>
+
+      <!-- Register Form -->
+      <form class="form" id="register-form" style="display:none;" autocomplete="off">
+        <div class="form-group">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" placeholder="Juan dela Cruz" required />
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="reg-org">Organization <span style="color:#555;font-size:0.7rem;">(optional)</span></label>
+          <input type="text" id="reg-org" placeholder="e.g. NBSC" />
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" placeholder="Create a password" required />
+        </div>
+        <div class="form-group">
+          <label for="reg-confirm">Confirm Password</label>
+          <input type="password" id="reg-confirm" placeholder="Repeat your password" required />
+        </div>
+        <button type="submit" class="btn-primary" id="register-btn">Create Account</button>
+        <div class="form-footer">
+          <p>Already have an account? <a href="#" onclick="switchForm('login')">Login here</a></p>
+          <div class="divider"></div>
+          <p><a href="index.html">← Back to Dashboard</a></p>
+        </div>
+      </form>
+
+    </div>
+  </div>
