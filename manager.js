@@ -92,3 +92,17 @@ let adminCurrentTile;
 // Location picker (building modal)
 let locationPickerMap    = null;
 let locationPickerMarker = null;
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  seedDefaultManager();
+  checkManagerAuth();
+  loadManagerProfile();
+  loadRequests();
+  updateQuickStats();
+  renderDashboard();
+  renderBuildingsGrid();
+  initNavigation();
+  setupEventListeners();
+  checkForNewRequests();
+});
