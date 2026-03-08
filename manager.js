@@ -730,3 +730,33 @@ function setupEventListeners() {
     window.location.href = 'index.html';
   });
 }
+
+
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function escHtml(str) {
+  if (str === undefined || str === null) return '';
+  return String(str)
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;');
+}
+
+// Global exports for HTML onclick attributes
+window.approveRequest           = approveRequest;
+window.denyRequest              = denyRequest;
+window.deleteRequest            = deleteRequest;
+window.restoreRequest           = restoreRequest;
+window.permanentlyDeleteRequest = permanentlyDeleteRequest;
+window.emptyRecycleBin          = emptyRecycleBin;
+window.openBuildingModal        = openBuildingModal;
+window.closeBuildingModal       = closeBuildingModal;
+window.editBuilding             = editBuilding;
+window.deleteBuilding           = deleteBuilding;
+window.handleManagerLogout      = () => document.getElementById('logoutBtn').click();
