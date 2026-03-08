@@ -423,3 +423,14 @@
       const box = document.getElementById('alert-box');
       box.className = `alert ${type}`;
     }
+    
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (loading) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner"></span> Please wait…`;
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = btnId === 'login-btn' ? 'Login' : 'Create Account';
+      }
+    }
