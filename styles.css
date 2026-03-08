@@ -1,30 +1,12 @@
-/* Reset and Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+:root {
+    --stroke: rgba(0,0,0,0.08);
+    --radius: 10px; 
 }
 
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0a0a0a;
-    color: #e0e0e0;
-    line-height: 1.6;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-/* Page Management */
-.page {
-    display: none;
-    min-height: 100vh;
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-.page.active {
-    display: block;
-}
-
-@keyframes fadeIn {
+/*Animation(Recycled) test*/
+@keyframes slideInUp {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -35,508 +17,81 @@ body {
     }
 }
 
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    padding: 2rem 0;
-    border-bottom: 1px solid #333;
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
-.header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
+html, body {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    height:100%;
+    margin:0;
+    background:#252324;
+    color:#ffffff; 
+}
+/* ── NAVBAR ── */
+.navbar {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-}
-
-.header h1 {
-    font-size: 2rem;
-    font-weight: 600;
-    color: #f0f0f0;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.tagline {
-    font-size: 1rem;
-    color: #888;
-    font-weight: 300;
-    margin: 0;
-}
-
-.back-button {
-    background: rgba(255, 193, 7, 0.1);
-    color: #ffc107;
-    border: 1px solid #ffc107;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-
-.back-button:hover {
-    background: rgba(255, 193, 7, 0.2);
-    transform: translateY(-1px);
-}
-/* Home Page Styles */
-.main-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 4rem 2rem;
-}
-
-.about-section,
-.purpose-section {
-    margin-bottom: 3rem;
-    text-align: center;
-}
-
-.about-section h2,
-.purpose-section h2 {
-    font-size: 1.8rem;
-    font-weight: 500;
-    color: #ffc107;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.2);
-}
-
-.about-section p,
-.purpose-section p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: #b0b0b0;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.action-section {
-    text-align: center;
-    margin-top: 4rem;
-}
-
-.cta-button {
-    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
-    color: #0a0a0a;
-    border: none;
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(255, 193, 7, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.cta-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(255, 193, 7, 0.4);
-    background: linear-gradient(135deg, #ffb300 0%, #ffa000 100%);
-}
-    /* Map Page Styles */
-.map-main {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-}
-
-.map-container {
-    position: relative;
-    background: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #333;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-#campus-map {
-    width: 100%;
-    height: 600px;
-    border-radius: 12px;
-}
-
-/* Legend */
-.legend {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(26, 26, 26, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid #444;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    min-width: 180px;
+    padding: 0 24px;
+    height: 72px;
+    background: #050203;
+    border-bottom: 1px solid var(--stroke);
+    position: sticky;
+    top: 0;
     z-index: 1000;
 }
 
-.legend h4 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #ffc107;
-    margin-bottom: 1rem;
-    text-shadow: 0 1px 2px rgba(255, 193, 7, 0.2);
-}
-
-.legend-item {
+.nav-brand {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    gap: 14px;
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: .4px;
+    color: #fff;
+    white-space: nowrap;
 }
 
-.legend-item:last-child {
-    margin-bottom: 0;
+.brand-badge {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #0d6efd;
+    box-shadow: 0 0 8px #0d6efd;
+    flex-shrink: 0;
 }
 
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    border: 1px solid #555;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.legend-color.low {
-    background: #28a745;
-}
-
-.legend-color.moderate {
-    background: #ffc107;
-}
-
-.legend-color.high {
-    background: #dc3545;
-}
-
-.legend-item span {
-    font-size: 0.9rem;
-    color: #b0b0b0;
-}
-
-/* Building Table */
-.table-container {
-    background: #1a1a1a;
-    border-radius: 12px;
-    padding: 2rem;
-    border: 1px solid #333;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-.table-container h3 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #ffc107;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 1px 2px rgba(255, 193, 7, 0.2);
-}
-
-.building-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #0a0a0a;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.building-table th,
-.building-table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #333;
-}
-
-.building-table th {
-    background: #1a1a1a;
-    color: #ffc107;
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.building-table td {
-    color: #e0e0e0;
+.nav-btn {
+    display: inline-block;
+    padding: 8px 22px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
     font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-decoration: none;
+    background: transparent;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.building-table tr:hover {
-    background: rgba(255, 193, 7, 0.05);
-}
-
-.building-table tr:last-child td {
-    border-bottom: none;
-}
-
-.status-low {
-    color: #28a745;
-    font-weight: 500;
-}
-
-.status-moderate {
-    color: #ffc107;
-    font-weight: 500;
-}
-
-.status-high {
-    color: #dc3545;
-    font-weight: 500;
-}
-
-/* Leaflet Map Customization - WHITE MAP FOR BETTER VISIBILITY */
-.leaflet-container {
-    background: #ffffff !important;
-    font-family: 'Inter', sans-serif !important;
-}
-
-.leaflet-popup-content-wrapper {
-    background: #ffffff !important;
-    border: 1px solid #333 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-}
-
-.leaflet-popup-content {
-    color: #0a0a0a !important;
-    font-family: 'Inter', sans-serif !important;
-}
-
-.leaflet-popup-tip {
-    background: #ffffff !important;
-}
-
-.leaflet-control-zoom {
-    border: 1px solid #333 !important;
-    background: #ffffff !important;
-}
-
-.leaflet-control-zoom a {
-    background: #f8f9fa !important;
-    color: #0a0a0a !important;
-    border-bottom: 1px solid #333 !important;
-}
-
-.leaflet-control-zoom a:hover {
-    background: #ffc107 !important;
-    color: #0a0a0a !important;
-}
-/* Additional map styling for white background */
-.leaflet-tile-pane {
-    filter: contrast(1.1) brightness(1.05);
-}
-
-.leaflet-marker-icon {
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
-
-/* Custom marker styling for campus buildings */
-.campus-marker {
-    background: #ffc107 !important;
-    border: 2px solid #fff !important;
-    border-radius: 50% !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
-}
-
-/* Enhanced map container styling */
-.map-container {
-    position: relative;
-    background: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #333;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-/* Legend positioning and styling */
-.legend {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(26, 26, 26, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid #444;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    min-width: 180px;
-    z-index: 1000;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .map-main {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    #campus-map {
-        height: 500px;
-    }
-    
-    .legend {
-        position: static;
-        margin-bottom: 1.5rem;
-        min-width: auto;
-    }
-}
-
-@media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 0 1rem;
-    }
-    
-    .header h1 {
-        font-size: 1.5rem;
-        text-align: center;
-    }
-    
-    .tagline {
-        text-align: center;
-        font-size: 0.9rem;
-    }
-    
-    .main-content {
-        padding: 2rem 1rem;
-    }
-    
-    .about-section h2,
-    .purpose-section h2 {
-        font-size: 1.5rem;
-    }
-    
-    .about-section p,
-    .purpose-section p {
-        font-size: 1rem;
-    }
-    
-    .map-main {
-        padding: 1rem;
-    }
-    
-    #campus-map {
-        height: 400px;
-    }
-    
-    .table-container {
-        padding: 1.5rem;
-    }
-    
-    .building-table th,
-    .building-table td {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .header {
-        padding: 1.5rem 0;
-    }
-    
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .tagline {
-        font-size: 0.85rem;
-    }
-    
-    .main-content {
-        padding: 1.5rem 1rem;
-    }
-    
-    .about-section,
-    .purpose-section {
-        margin-bottom: 2rem;
-    }
-    
-    .cta-button {
-        padding: 0.8rem 2rem;
-        font-size: 1rem;
-    }
-    
-    #campus-map {
-        height: 350px;
-    }
-    
-    .legend {
-        padding: 1rem;
-    }
-    
-    .legend h4 {
-        font-size: 0.9rem;
-    }
-    
-    .legend-item {
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .legend-color {
-        width: 12px;
-        height: 12px;
-    }
-    
-    .legend-item span {
-        font-size: 0.8rem;
-    }
-    
-    .table-container {
-        padding: 1rem;
-    }
-    
-    .table-container h3 {
-        font-size: 1.1rem;
-    }
-    
-    .building-table th,
-    .building-table td {
-        padding: 0.5rem 0.25rem;
-        font-size: 0.8rem;
-    }
-}
-
-/* Smooth transitions and hover effects */
-.page {
-    transition: all 0.3s ease-in-out;
-}
-
-.cta-button,
-.back-button {
-    transition: all 0.3s ease;
-}
-
-.building-table tr {
-    transition: background-color 0.3s ease;
-}
-
-.legend {
-    transition: all 0.3s ease;
-}
-
-.legend:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
-}
-
-/* Focus states for accessibility */
-.cta-button:focus,
-.back-button:focus {
-    outline: 2px solid #ffc107;
-    outline-offset: 2px;
-}
-
-.building-table tr:focus {
-    outline: 1px solid #ffc107;
-    outline-offset: -1px;
+.nav-btn:hover,
+.nav-btn.active {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.5);
+    color: #fff;
 }
