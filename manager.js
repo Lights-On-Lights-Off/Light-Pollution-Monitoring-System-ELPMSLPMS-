@@ -399,3 +399,58 @@ function setLocationPickerPin(lat, lng) {
   if (mapEl)   mapEl.classList.add('has-location');
 }
 
+
+function initLocationPicker() {
+  if (locationPickerMap) return;
+
+  locationPickerMap = L.map('location-picker-map', {
+    center: [8.3595, 124.8675],
+    zoom:   18,
+    zoomControl: true,
+    attributionControl: false,
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, subdomains: 'abc'
+  }).addTo(locationPickerMap);
+
+  const existingLat = parseFloat(document.getElementById('building-lat').value);
+  const existingLng = parseFloat(document.getElementById('building-lng').value);
+  if (!isNaN(existingLat) && !isNaN(existingLng)) {
+    placePickerMarker(existingLat, existingLng);
+    locationPickerMap.setView([existingLat, existingLng], 18);
+    setLocationPickerPin(existingLat, existingLng);
+  }
+
+  locationPickerMap.on('click', e => {
+    placePickerMarker(e.latlng.lat, e.latlng.lng);
+    setLocationPickerPin(e.latlng.lat, e.latlng.lng);
+  });
+}
+
+function placePickerMarker(lat, lng) {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:22px; height:22px; border-radius:50% 50% 50% 0;
+      background:#0d6efd; border:2px solid #fff;
+      transform:rotate(-45deg);
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);
+    "></div>`,
+    iconSize:   [22, 22],
+    iconAnchor: [11, 22],
+  });
+
+  if (locationPickerMarker) {
+    locationPickerMarker.setLatLng([lat, lng]);
+  } else {
+    locationPickerMarker = L.marker([lat, lng], { icon, draggable: true })
+      .addTo(locationPickerMap);
+    locationPickerMarker.on('dragend', e => {
+      const { lat, lng } = e.target.getLatLng();
+      setLocationPickerPin(lat, lng);
+    });
+  }
+}
+
+
