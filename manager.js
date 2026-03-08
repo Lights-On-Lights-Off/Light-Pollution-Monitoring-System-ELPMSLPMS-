@@ -358,3 +358,44 @@ function getFilteredBuildings() {
   if (pollutionFilter === 'all') return buildings;
   return buildings.filter(b => b.pollutionLevel === pollutionFilter);
 }
+
+
+function openBuildingModal(isEdit = false) {
+  document.getElementById('modal-title').textContent = isEdit ? 'Edit Building' : 'Add Building';
+  document.getElementById('building-modal').classList.add('open');
+  setTimeout(() => initLocationPicker(), 80);
+}
+
+function closeBuildingModal() {
+  document.getElementById('building-modal').classList.remove('open');
+  document.getElementById('building-form').reset();
+  editingBuildingId = null;
+  document.getElementById('modal-title').textContent = 'Add Building';
+  resetLocationPickerDisplay();
+  if (locationPickerMap) {
+    locationPickerMap.remove();
+    locationPickerMap    = null;
+    locationPickerMarker = null;
+  }
+}
+
+function resetLocationPickerDisplay() {
+  const display = document.getElementById('location-picker-display');
+  const text    = document.getElementById('location-picker-text');
+  const mapEl   = document.getElementById('location-picker-map');
+  if (display) display.classList.remove('selected');
+  if (text)    text.textContent = 'No location selected';
+  if (mapEl)   mapEl.classList.remove('has-location');
+}
+
+function setLocationPickerPin(lat, lng) {
+  document.getElementById('building-lat').value = lat;
+  document.getElementById('building-lng').value = lng;
+  const display = document.getElementById('location-picker-display');
+  const text    = document.getElementById('location-picker-text');
+  const mapEl   = document.getElementById('location-picker-map');
+  if (text)    text.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  if (display) display.classList.add('selected');
+  if (mapEl)   mapEl.classList.add('has-location');
+}
+
