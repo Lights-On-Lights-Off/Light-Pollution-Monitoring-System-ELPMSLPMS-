@@ -137,3 +137,13 @@ function getActivityLog() {
     .filter(r => r.status === 'approved' || r.status === 'denied')
     .sort((a, b) => new Date(b.reviewedAt || b.date) - new Date(a.reviewedAt || a.date));
 } 
+
+function updateStats() {
+  const users    = getUsers().filter(u => u.role !== 'admin');
+  const requests = getRequests();
+
+  document.getElementById('stat-total-users').textContent    = users.filter(u => u.role === 'user').length;
+  document.getElementById('stat-total-managers').textContent = users.filter(u => u.role === 'manager').length;
+  document.getElementById('stat-total-requests').textContent = requests.length;
+  document.getElementById('stat-pending').textContent        = requests.filter(r => r.status === 'pending').length;
+} 
