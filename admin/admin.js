@@ -112,3 +112,28 @@ function navigate(btn) {
 
   if (section === 'settings') renderStorageUsage();
 }  
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('nbsc_users')) || []; }
+  catch (e) { return []; }
+}
+
+function saveUsers(users) {
+  localStorage.setItem('nbsc_users', JSON.stringify(users));
+}
+
+function getRequests() {
+  try { return JSON.parse(localStorage.getItem('nbscDataRequests')) || []; }
+  catch (e) { return []; }
+}
+
+function getNotifications() {
+  try { return JSON.parse(localStorage.getItem('userNotifications')) || []; }
+  catch (e) { return []; }
+}
+
+function getActivityLog() {
+  return getRequests()
+    .filter(r => r.status === 'approved' || r.status === 'denied')
+    .sort((a, b) => new Date(b.reviewedAt || b.date) - new Date(a.reviewedAt || a.date));
+} 
