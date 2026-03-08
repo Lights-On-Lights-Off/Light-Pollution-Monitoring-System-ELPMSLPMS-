@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 :root {
-    --stroke: rgba(0,0,0,0.08);
+    --stroke: #060505;
     --radius: 10px; 
 }
 
@@ -30,7 +30,7 @@ html, body {
     font-size: 16px;
     height:100%;
     margin:0;
-    background:#252324;
+    background:#131618;
     color:#ffffff; 
 }
 /* ── NAVBAR ── */
