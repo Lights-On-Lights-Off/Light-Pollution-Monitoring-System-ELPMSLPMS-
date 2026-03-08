@@ -58,3 +58,36 @@ const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
   }
   loop();
 })();
+
+function checkAdminAuth() {
+  const raw = localStorage.getItem('nbsc_session');
+  if (!raw) { window.location.href = '../index.html'; return; }
+  try {
+    const session = JSON.parse(raw);
+    if (session.role !== 'admin') window.location.href = '../index.html';
+  } catch (e) {
+    window.location.href = '../index.html';
+  }
+}
+
+function loadAdminProfile() {
+  const raw = localStorage.getItem('nbsc_session');
+  if (!raw) return;
+  try {
+    const session  = JSON.parse(raw);
+    const name     = session.name || 'Admin';
+    const initials = name.split(' ').map(w => w[0].toUpperCase()).slice(0, 2).join('');
+    document.getElementById('admin-avatar').textContent = initials;
+    document.getElementById('admin-name').textContent   = name;
+  } catch (e) { /* ignore */ }
+}
+
+function seedDefaultAdmin() {
+  const raw    = localStorage.getItem('nbsc_users');
+  let users    = raw ? JSON.parse(raw) : [];
+  const exists = users.find(u => u.email === 'admin@example.com');
+  if (!exists) {
+    users.push({ email: 'admin@example.com', password: 'admin123', name: 'System Admin', role: 'admin' });
+    localStorage.setItem('nbsc_users', JSON.stringify(users));
+  }
+}
