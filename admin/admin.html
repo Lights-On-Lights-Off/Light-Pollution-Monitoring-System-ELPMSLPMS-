@@ -186,3 +186,99 @@
           </div>
         </div>
       </div>
+
+      <!-- SYSTEM SETTINGS SECTION -->
+      <div class="section" id="section-settings">
+        <div class="card">
+          <div class="card-head"><h3>System Settings</h3></div>
+          <div class="settings-grid">
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Storage Usage</h4>
+                <p>Current localStorage utilization across all system data.</p>
+                <div class="storage-bar-wrap">
+                  <div class="storage-bar-bg">
+                    <div class="storage-bar-fill" id="storage-bar" style="width:0%"></div>
+                  </div>
+                  <div class="storage-label" id="storage-label">Calculating…</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Clear All Requests</h4>
+                <p>Permanently delete all data requests from the system. This cannot be undone.</p>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="confirmClearRequests()" style="flex-shrink:0;">Clear</button>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Clear Notifications</h4>
+                <p>Remove all user notifications stored in the system.</p>
+              </div>
+              <button class="btn btn-warn btn-sm" onclick="confirmClearNotifications()" style="flex-shrink:0;">Clear</button>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Reset Buildings to Default</h4>
+                <p>Restore the campus buildings list back to the original default configuration.</p>
+              </div>
+              <button class="btn btn-warn btn-sm" onclick="confirmResetBuildings()" style="flex-shrink:0;">Reset</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </main>
+</div><!-- /shell -->
+
+<!-- EDIT ROLE MODAL -->
+<div class="modal-overlay" id="role-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Edit Role</h3>
+      <button class="modal-close" onclick="closeRoleModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Change the role for <strong id="role-modal-name">—</strong>.</p>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="role-select">
+          <option value="user">User</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveRole()">Save</button>
+        <button class="btn btn-ghost" onclick="closeRoleModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="confirm-title">Confirm</h3>
+      <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message">Are you sure?</p>
+      <div class="form-actions">
+        <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmAction()">Confirm</button>
+        <button class="btn btn-ghost" onclick="closeConfirmModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./admin.js"></script>
+</body>
+</html>
