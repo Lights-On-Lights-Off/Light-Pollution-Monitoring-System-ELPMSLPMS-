@@ -274,3 +274,28 @@ function saveRole() {
   renderDashboard();
   renderUsersTable();
 } 
+
+let pendingDeleteEmail = null;
+
+function confirmDeleteUser(email) {
+  const user = getUsers().find(u => u.email === email);
+  if (!user) return;
+  pendingDeleteEmail = email;
+  document.getElementById('confirm-title').textContent  = 'Delete Account';
+  document.getElementById('confirm-message').innerHTML  =
+    `Are you sure you want to delete the account for <strong>${escHtml(user.name || user.email)}</strong>? This cannot be undone.`;
+  document.getElementById('confirm-ok-btn').className   = 'btn btn-danger';
+  document.getElementById('confirm-modal').classList.add('open');
+  pendingConfirmAction = doDeleteUser;
+}
+
+function doDeleteUser() {
+  if (!pendingDeleteEmail) return;
+  let users = getUsers();
+  users = users.filter(u => u.email !== pendingDeleteEmail);
+  saveUsers(users);
+  pendingDeleteEmail = null;
+  updateStats();
+  renderDashboard();
+  renderUsersTable();
+} 
