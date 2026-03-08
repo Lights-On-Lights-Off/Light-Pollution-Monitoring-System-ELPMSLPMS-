@@ -37,4 +37,104 @@
       z-index: 0;
       pointer-events: none;
     }
-    
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 72px;
+      background: #050203;
+      border-bottom: 1px solid var(--stroke);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: .4px;
+      color: #fff;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .brand-badge {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      flex-shrink: 0;
+    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+
+    .user-menu-wrapper { position: relative; }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 14px 6px 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--stroke);
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .user-pill:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .user-avatar-circle {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .user-pill-info { display: flex; flex-direction: column; line-height: 1.25; }
+    .user-pill-name  { font-size: 1rem; font-weight: 600; color: #fff; }
+    .user-pill-email { font-size: 0.95rem; color: var(--muted); }
+
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 230px;
+      background: #1a1818;
+      border: 1px solid var(--stroke);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      overflow: hidden;
+      z-index: 9999;
+      animation: fadeIn 0.15s ease;
+    }
+    .user-dropdown.open { display: block; }
+    .dropdown-user-info {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--stroke);
+    }
+    .dropdown-user-name  { font-size: 1.15rem; font-weight: 600; color: #fff; }
+    .dropdown-user-email { font-size: 0.9rem; color: var(--muted); margin-top: 2px; }
+    .dropdown-item-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 11px 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      color: #e0e0e0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s;
+    }
+    .dropdown-item-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .dropdown-item-btn.danger { color: #fca5a5; }
+    .dropdown-item-btn.danger:hover { background: rgba(239,68,68,0.1); }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
