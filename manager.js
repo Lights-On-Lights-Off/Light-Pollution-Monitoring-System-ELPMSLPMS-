@@ -454,3 +454,60 @@ function placePickerMarker(lat, lng) {
 }
 
 
+function editBuilding(id) {
+  const b = buildings.find(b => b.id === id);
+  if (!b) return;
+  editingBuildingId = id;
+  document.getElementById('building-name').value        = b.name;
+  document.getElementById('building-lat').value         = b.lat;
+  document.getElementById('building-lng').value         = b.lng;
+  document.getElementById('pollution-level').value      = b.pollutionLevel;
+  document.getElementById('building-description').value = b.description || '';
+  openBuildingModal(true);
+}
+
+function deleteBuilding(id) {
+  const b = buildings.find(b => b.id === id);
+  if (!b) return;
+  if (!confirm(`Delete ${b.name}? This cannot be undone.`)) return;
+  buildings = buildings.filter(b => b.id !== id);
+  updateQuickStats();
+  renderBuildingsGrid();
+  if (adminMap) renderMapMarkers();
+}
+
+function handleBuildingSubmit(e) {
+  e.preventDefault();
+  const lat = parseFloat(document.getElementById('building-lat').value);
+  const lng = parseFloat(document.getElementById('building-lng').value);
+
+  if (isNaN(lat) || isNaN(lng)) {
+    const mapEl = document.getElementById('location-picker-map');
+    mapEl.style.borderColor = '#ef4444';
+    mapEl.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.2)';
+    setTimeout(() => {
+      mapEl.style.borderColor = '';
+      mapEl.style.boxShadow   = '';
+    }, 2000);
+    return;
+  }
+
+  const data = {
+    name:          document.getElementById('building-name').value.trim(),
+    lat, lng,
+    pollutionLevel: document.getElementById('pollution-level').value,
+    description:   document.getElementById('building-description').value.trim(),
+  };
+
+  if (editingBuildingId !== null) {
+    const idx = buildings.findIndex(b => b.id === editingBuildingId);
+    if (idx !== -1) buildings[idx] = { ...buildings[idx], ...data };
+  } else {
+    buildings.push({ id: Date.now(), ...data });
+  }
+
+  updateQuickStats();
+  renderBuildingsGrid();
+  if (adminMap) renderMapMarkers();
+  closeBuildingModal();
+}
