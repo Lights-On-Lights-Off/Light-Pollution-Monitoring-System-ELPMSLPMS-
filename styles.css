@@ -310,3 +310,113 @@ html, body {
     letter-spacing:.3px; 
 }
 
+.bottom-panel {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 14px;
+}
+#logTable { 
+    font-size: 0.95rem; 
+    max-height:150px; 
+    overflow-y:auto; 
+}
+.table thead { 
+    background:#000000; 
+}
+.table tbody tr {
+    background:#000000; 
+}
+
+/* Responsive Design for mobile */
+@media (max-width: 768px) {
+.header {
+    padding: 10px 12px;
+}
+.brand {
+    gap: 12px;
+    font-size: 1.25rem;
+}
+.brand-badge {
+    width: 8px;
+    height: 8px;
+}
+#app {
+    gap: 10px;
+    padding: 10px;
+    height: calc(100vh - 50px);
+}
+.top-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+#map {
+    min-height: 300px;
+}
+.card-stack {
+    gap: 10px;
+}   
+.card.p-3 {
+    padding: 10px !important;
+} 
+.card h5, .card h6 {
+    font-size: 0.95rem;
+}
+.kpis {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+.kpi {
+    padding: 8px;
+    font-size: 0.85rem;
+}  
+.kpi .label {
+    font-size: 0.82rem;
+}  
+.kpi .value {
+    font-size: 0.95rem;
+} 
+canvas {
+    max-height: 150px !important;
+}
+#logtable .bottom-panel table thead {
+    font-size: 0.75rem;
+}
+#logtable .bottom-panel table tbody tr {
+    font-size: 0.9rem;
+}
+}
+
+/* Responsive design para sa small cp */
+@media (max-width: 480px) {
+.header {
+    padding: 8px 10px;
+}
+.brand {
+    gap: 8px;
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+#app {
+    gap: 8px;
+    padding: 8px;
+}
+.top-row {
+    gap: 8px;
+}
+#map {
+    min-height: 250px;
+}
+.card-stack {
+   gap: 8px;
+}
+.card.p-3 {
+    padding: 8px !important;
+}
+.card h5, .card h6 {
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+}
+.kpis {
+    grid-template-columns: 1fr;
+    gap: 6px;
+}
