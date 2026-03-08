@@ -247,3 +247,36 @@
     a { transition: color 0.15s; }
   </style>
 </head>
+
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="page">
+    <div class="card">
+
+      <div class="card-header">
+        <span class="badge-dot"></span>
+        <h1 id="form-title">Welcome Back</h1>
+        <p>NBSC Light Pollution Monitoring System</p>
+      </div>
+
+      <div id="alert-box" class="alert"></div>
+
+      <!-- Login Form -->
+      <form class="form" id="login-form" autocomplete="off">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" placeholder="you@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="btn-primary" id="login-btn">Login</button>
+        <div class="form-footer">
+          <p>Don't have an account? <a href="#" onclick="switchForm('register')">Register here</a></p>
+          <div class="divider"></div>
+          <p><a href="index.html">← Back to Dashboard</a></p>
+        </div>
+      </form>
