@@ -181,3 +181,11 @@ function navigateTo(id) {
 }
 
 
+function updateQuickStats() {
+  document.getElementById('pending-count').textContent        = requests.filter(r => r.status === 'pending').length;
+  document.getElementById('approved-count').textContent       = requests.filter(r => r.status === 'approved').length;
+  document.getElementById('high-pollution-count').textContent = buildings.filter(b => b.pollutionLevel === 'high').length;
+  document.getElementById('total-buildings-count').textContent = buildings.length;
+}
+
+
