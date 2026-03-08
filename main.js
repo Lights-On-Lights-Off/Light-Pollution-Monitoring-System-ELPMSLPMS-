@@ -159,57 +159,84 @@ campusBuildings.forEach(building => {
   lightMarkers[building.id] = marker;
 });
 
-    // --- UPDATED POPUP CONTENT (Dark Text for White Background) ---
-    const popupContent = `
-        <div style="font-family: 'Inter', sans-serif; padding: 5px; min-width: 200px;">
-            <h4 style="
-                margin: 0 0 8px 0;
-                color: #111827; /* Dark Black */
-                font-size: 16px;
-                font-weight: 700;
-                border-bottom: 1px solid #eee;
-                padding-bottom: 8px;
-            ">${building.name}</h4>
-            
-            <p style="margin: 8px 0; font-size: 14px; color: #374151;">
-                <strong>Level:</strong> 
-                <span style="
-                    color: ${color}; 
-                    font-weight: 600; 
-                    background: #f3f4f6; 
-                    padding: 2px 6px; 
-                    border-radius: 4px;
-                ">${getPollutionLabel(building.pollutionLevel)}</span>
-            </p>
-            
-            <p style="
-                margin: 0;
-                color: #6b7280; /* Grey description text */
-                font-size: 13px;
-                line-height: 1.4;
-            ">${building.description}</p>
-        </div>
-    `;
+// ── Status Distribution Chart ──
+const statusChart = new Chart(document.getElementById("statusChart"), {
+  type: "pie",
+  data: {
+    labels: ["Low", "Moderate", "High"],
+    datasets: [{
+      data: [0, 0, 0],
+      backgroundColor: [
+        POLLUTION_COLORS.low,
+        POLLUTION_COLORS.moderate,
+        POLLUTION_COLORS.high
+      ]
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { labels: { color: "#fff" } }
+    }
+  }
+});
 
-    marker.bindPopup(popupContent);
-    
-    // Simple hover animation
-    marker.on('mouseover', function() {
-        this._icon.querySelector('div').style.transform = 'scale(1.2)';
-    });
-    marker.on('mouseout', function() {
-        this._icon.querySelector('div').style.transform = 'scale(1)';
-    });
+function updateKPIsAndStatusChart() {
+  const total = campusBuildings.length;
+  const online = campusBuildings.filter(b => b.online).length;
+  const offline = total - online;
+
+  document.getElementById("kpiTotal").textContent = total;
+  document.getElementById("kpiOnline").textContent = online;
+  document.getElementById("kpiOffline").textContent = offline;
+
+  const counts = { low: 0, moderate: 0, high: 0 };
+  campusBuildings.forEach(b => counts[b.pollutionLevel]++);
+
+  statusChart.data.datasets[0].data = [counts.low, counts.moderate, counts.high];
+  statusChart.update();
 }
 
-function getPollutionColor(level) {
-    // Slightly darker colors for better contrast on white
-    switch(level) {
-        case 'low': return '#16a34a';      // Green
-        case 'moderate': return '#d97706'; // Orange
-        case 'high': return '#dc2626';     // Red
-        default: return '#9ca3af';
+updateKPIsAndStatusChart();
+
+// ── Light Intensity Trend Chart ──
+const lightTrendChart = new Chart(document.getElementById("flowChart"), {
+  type: "line",
+  data: {
+    labels: [],
+    datasets: campusBuildings.map(b => ({
+      label: b.name,
+      data: [],
+      borderWidth: 2,
+      fill: false,
+      borderColor: POLLUTION_COLORS[b.pollutionLevel]
+    }))
+  },
+  options: {
+    plugins: {
+      legend: { labels: { color: "#fff", font: { size: 10 } } }
+    },
+    scales: {
+      y: {
+        title: { display: true, text: "Light Intensity (lux)", color: "#aaa" },
+        ticks: { color: "#aaa" },
+        grid: { color: "rgba(255,255,255,0.05)" }
+      },
+      x: {
+        ticks: { color: "#aaa" },
+        grid: { color: "rgba(255,255,255,0.05)" }
+      }
     }
+  }
+});
+
+// ── Helpers ──
+function getLevelFromLux(lux) {
+  // Use weighted random instead of lux thresholds for controlled distribution
+  const r = Math.random();
+  if (r < 0.40) return "low";       // 40% chance
+  if (r < 0.70) return "moderate";  // 30% chance
+  // remaining 30% → high ... but only if lux is actually elevated
+  return lux > 60 ? "high" : "moderate";
 }
 
 function getPollutionLabel(level) {
