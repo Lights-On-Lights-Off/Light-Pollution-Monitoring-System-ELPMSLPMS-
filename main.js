@@ -238,54 +238,75 @@ function getLevelFromLux(lux) {
   // remaining 30% → high ... but only if lux is actually elevated
   return lux > 60 ? "high" : "moderate";
 }
-
 function getPollutionLabel(level) {
-    switch(level) {
-        case 'low': return 'Low';
-        case 'moderate': return 'Moderate';
-        case 'high': return 'High';
-        default: return 'Unknown';
+  const labels = { low: "Low", moderate: "Moderate", high: "High (Light Pollution)" };
+  return labels[level] || level;
+}
+
+function getLogTimestamp() {
+  const now = new Date();
+  return (
+    now.getFullYear() + "-" +
+    String(now.getMonth() + 1).padStart(2, "0") + "-" +
+    String(now.getDate()).padStart(2, "0") + " " +
+    String(now.getHours()).padStart(2, "0") + ":" +
+    String(now.getMinutes()).padStart(2, "0") + ":" +
+    String(now.getSeconds()).padStart(2, "0")
+  );
+}
+
+function addLightLogEntry(building) {
+  if (!logBody) return;
+
+  const color = POLLUTION_COLORS[building.pollutionLevel];
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>${building.name}</td>
+    <td>
+      <span style="
+        display:inline-block;
+        width:10px; height:10px;
+        border-radius:50%;
+        background:${color};
+        margin-right:6px;
+      "></span>
+      ${cap(building.pollutionLevel)}
+    </td>
+    <td>${building.lux.toFixed(1)}</td>
+    <td>${getPollutionLabel(building.pollutionLevel)}</td>
+    <td>${building.online ? "Online" : "Offline"}</td>
+    <td>${getLogTimestamp()}</td>
+  `;
+
+  logBody.prepend(row);
+
+  if (logBody.children.length > 50) {
+    logBody.removeChild(logBody.lastChild);
+  }
+}
+
+// ── DOM References ──
+const logBody = document.getElementById("logBody");
+
+// ── Simulate Real-time Updates every 5 seconds ──
+setInterval(() => {
+  const time = new Date().toLocaleTimeString();
+  lightTrendChart.data.labels.push(time);
+  if (lightTrendChart.data.labels.length > 10) lightTrendChart.data.labels.shift();
+
+  campusBuildings.forEach((building, index) => {
+    // Simulate lux fluctuation
+    building.lux = Math.min(120, Math.max(5, building.lux + (Math.random() - 0.5) * 15));
+    building.pollutionLevel = getLevelFromLux(building.lux);
+
+    // Update trend chart dataset
+    lightTrendChart.data.datasets[index].data.push(building.lux.toFixed(1));
+    if (lightTrendChart.data.datasets[index].data.length > 10) {
+      lightTrendChart.data.datasets[index].data.shift();
     }
-}
 
-function getPollutionStatus(level) {
-    switch(level) {
-        case 'low': return 'Acceptable';
-        case 'moderate': return 'Check Required';
-        case 'high': return 'Action Needed';
-        default: return 'Unknown';
-    }
-}
-
-function populateBuildingTable() {
-    const tableBody = document.getElementById('building-table-body');
-    // Ensure the table in HTML has class="light-table"
-    
-    tableBody.innerHTML = '';
-    
-    campusBuildings.forEach(building => {
-        const row = document.createElement('tr');
-        const label = getPollutionLabel(building.pollutionLevel);
-        
-        row.innerHTML = `
-            <td><strong>${building.name}</strong></td>
-            <td><span class="status-${building.pollutionLevel}">${label}</span></td>
-            <td>${getPollutionStatus(building.pollutionLevel)}</td>
-        `;
-        
-        row.addEventListener('click', () => {
-            map.eachLayer(function(layer) {
-                if (layer instanceof L.Marker && layer.options.title === building.name) {
-                    layer.openPopup();
-                    map.setView(building.coordinates, 17);
-                }
-            });
-        });
-        
-        tableBody.appendChild(row);
-    });
-}
-
+    // Update marker color and popup
 window.addEventListener('resize', function() {
     if (map) map.invalidateSize();
 });
