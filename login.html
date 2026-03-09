@@ -468,7 +468,7 @@
           localStorage.setItem('nbsc_session', JSON.stringify({ email: match.email, name: match.name, role: match.role || 'user' }));
           showAlert('success');
           let dest = 'user/user.html';
-          if (match.role === 'manager') dest = 'manager.html';
+          if (match.role === 'manager') dest = 'manager/manager.html';
           if (match.role === 'admin')   dest = 'admin-app/admin.html';
           setTimeout(() => { window.location.href = dest; }, 1200);
         } else {
