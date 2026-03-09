@@ -1,8 +1,13 @@
-// NBSC Admin App — admin.js
+// ══════════════════════════════════════════════
+//  NBSC Admin App — admin.js
+//  All localStorage paths relative to the
+//  shared system (same keys as manager/user)
+// ══════════════════════════════════════════════
 
+// ── Capitalize helper ──
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
-// Animated Background Canvas
+// ── Animated Background Canvas ──────────────
 (function () {
   const canvas = document.getElementById('bg-canvas');
   if (!canvas) return;
@@ -59,38 +64,16 @@ const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
   loop();
 })();
 
-function checkAdminAuth() {
-  const raw = localStorage.getItem('nbsc_session');
-  if (!raw) { window.location.href = '../index.html'; return; }
-  try {
-    const session = JSON.parse(raw);
-    if (session.role !== 'admin') window.location.href = '../index.html';
-  } catch (e) {
-    window.location.href = '../index.html';
-  }
-}
 
 function loadAdminProfile() {
-  const raw = localStorage.getItem('nbsc_session');
-  if (!raw) return;
-  try {
-    const session  = JSON.parse(raw);
-    const name     = session.name || 'Admin';
-    const initials = name.split(' ').map(w => w[0].toUpperCase()).slice(0, 2).join('');
-    document.getElementById('admin-avatar').textContent = initials;
-    document.getElementById('admin-name').textContent   = name;
-  } catch (e) { /* ignore */ }
+  document.getElementById('admin-avatar').textContent = 'AD';
+  document.getElementById('admin-name').textContent   = 'NBSC Admin';
 }
 
-function seedDefaultAdmin() {
-  const raw    = localStorage.getItem('nbsc_users');
-  let users    = raw ? JSON.parse(raw) : [];
-  const exists = users.find(u => u.email === 'admin@example.com');
-  if (!exists) {
-    users.push({ email: 'admin@example.com', password: 'admin123', name: 'System Admin', role: 'admin' });
-    localStorage.setItem('nbsc_users', JSON.stringify(users));
-  }
-}
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
 
 const PAGE_LABELS = {
   dashboard: { title: 'Dashboard',        sub: 'System overview' },
@@ -107,11 +90,16 @@ function navigate(btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(`section-${section}`).classList.add('active');
 
-  document.getElementById('page-title').textContent = PAGE_LABELS[section].title;
-  document.getElementById('topbar-sub').textContent = PAGE_LABELS[section].sub;
+  document.getElementById('page-title').textContent  = PAGE_LABELS[section].title;
+  document.getElementById('topbar-sub').textContent  = PAGE_LABELS[section].sub;
 
   if (section === 'settings') renderStorageUsage();
-}  
+}
+
+
+// ══════════════════════════════════════════════
+//  DATA HELPERS
+// ══════════════════════════════════════════════
 
 function getUsers() {
   try { return JSON.parse(localStorage.getItem('nbsc_users')) || []; }
@@ -133,20 +121,36 @@ function getNotifications() {
 }
 
 function getActivityLog() {
+  // Manager activity is derived from approved/denied requests
   return getRequests()
     .filter(r => r.status === 'approved' || r.status === 'denied')
     .sort((a, b) => new Date(b.reviewedAt || b.date) - new Date(a.reviewedAt || a.date));
-} 
+}
+
+
+// ══════════════════════════════════════════════
+//  STATS
+// ══════════════════════════════════════════════
 
 function updateStats() {
   const users    = getUsers().filter(u => u.role !== 'admin');
   const requests = getRequests();
 
-  document.getElementById('stat-total-users').textContent    = users.filter(u => u.role === 'user').length;
-  document.getElementById('stat-total-managers').textContent = users.filter(u => u.role === 'manager').length;
-  document.getElementById('stat-total-requests').textContent = requests.length;
-  document.getElementById('stat-pending').textContent        = requests.filter(r => r.status === 'pending').length;
-} 
+  const totalUsers    = users.filter(u => u.role === 'user').length;
+  const totalManagers = users.filter(u => u.role === 'manager').length;
+  const totalRequests = requests.length;
+  const pending       = requests.filter(r => r.status === 'pending').length;
+
+  document.getElementById('stat-total-users').textContent    = totalUsers;
+  document.getElementById('stat-total-managers').textContent = totalManagers;
+  document.getElementById('stat-total-requests').textContent = totalRequests;
+  document.getElementById('stat-pending').textContent        = pending;
+}
+
+
+// ══════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════
 
 function renderDashboard() {
   renderRecentUsers();
@@ -154,7 +158,7 @@ function renderDashboard() {
 }
 
 function renderRecentUsers() {
-  const users     = getUsers().filter(u => u.role !== 'admin').slice(-5).reverse();
+  const users   = getUsers().filter(u => u.role !== 'admin').slice(-5).reverse();
   const container = document.getElementById('recent-users-list');
 
   if (!users.length) {
@@ -203,7 +207,12 @@ function renderActivityFeed() {
       </div>
     `;
   }).join('');
-} 
+}
+
+
+// ══════════════════════════════════════════════
+//  USERS MANAGEMENT
+// ══════════════════════════════════════════════
 
 function renderUsersTable() {
   const filter = document.getElementById('role-filter').value;
@@ -214,7 +223,7 @@ function renderUsersTable() {
   const empty = document.getElementById('users-empty');
 
   if (!users.length) {
-    tbody.innerHTML     = '';
+    tbody.innerHTML = '';
     empty.style.display = 'block';
     return;
   }
@@ -229,7 +238,7 @@ function renderUsersTable() {
         <div class="td-actions">
           <button class="btn btn-ghost btn-sm" onclick="openRoleModal('${escHtml(u.email)}')">
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+              <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
             </svg>
             Edit Role
           </button>
@@ -246,11 +255,15 @@ function renderUsersTable() {
   `).join('');
 }
 
+
+// ── Edit Role Modal ──────────────────────────
 let editingEmail = null;
 
 function openRoleModal(email) {
-  const user = getUsers().find(u => u.email === email);
+  const users = getUsers();
+  const user  = users.find(u => u.email === email);
   if (!user) return;
+
   editingEmail = email;
   document.getElementById('role-modal-name').textContent = user.name || user.email;
   document.getElementById('role-select').value = user.role;
@@ -264,27 +277,32 @@ function closeRoleModal() {
 
 function saveRole() {
   if (!editingEmail) return;
-  const users = getUsers();
-  const idx   = users.findIndex(u => u.email === editingEmail);
+  const users   = getUsers();
+  const idx     = users.findIndex(u => u.email === editingEmail);
   if (idx === -1) return;
+
   users[idx].role = document.getElementById('role-select').value;
   saveUsers(users);
   closeRoleModal();
   updateStats();
   renderDashboard();
   renderUsersTable();
-} 
+}
 
+
+// ── Delete User ──────────────────────────────
 let pendingDeleteEmail = null;
 
 function confirmDeleteUser(email) {
-  const user = getUsers().find(u => u.email === email);
+  const users = getUsers();
+  const user  = users.find(u => u.email === email);
   if (!user) return;
+
   pendingDeleteEmail = email;
-  document.getElementById('confirm-title').textContent  = 'Delete Account';
-  document.getElementById('confirm-message').innerHTML  =
+  document.getElementById('confirm-title').textContent   = 'Delete Account';
+  document.getElementById('confirm-message').innerHTML   =
     `Are you sure you want to delete the account for <strong>${escHtml(user.name || user.email)}</strong>? This cannot be undone.`;
-  document.getElementById('confirm-ok-btn').className   = 'btn btn-danger';
+  document.getElementById('confirm-ok-btn').className    = 'btn btn-danger';
   document.getElementById('confirm-modal').classList.add('open');
   pendingConfirmAction = doDeleteUser;
 }
@@ -300,16 +318,22 @@ function doDeleteUser() {
   renderUsersTable();
 }
 
+
+// ══════════════════════════════════════════════
+//  SYSTEM SETTINGS
+// ══════════════════════════════════════════════
+
 function renderStorageUsage() {
   let total = 0;
   for (const key in localStorage) {
     if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
-      total += (localStorage[key].length + key.length) * 2;
+      total += (localStorage[key].length + key.length) * 2; // UTF-16 bytes
     }
   }
-  const kb  = (total / 1024).toFixed(1);
-  const pct = Math.min((total / 1024 / 5120) * 100, 100).toFixed(1);
-  document.getElementById('storage-bar').style.width   = pct + '%';
+  const kb      = (total / 1024).toFixed(1);
+  const limit   = 5120; // ~5MB typical limit in KB
+  const pct     = Math.min((total / 1024 / limit) * 100, 100).toFixed(1);
+  document.getElementById('storage-bar').style.width  = pct + '%';
   document.getElementById('storage-label').textContent = `${kb} KB used (${pct}% of ~5 MB limit)`;
 }
 
@@ -349,14 +373,19 @@ function confirmResetBuildings() {
       renderStorageUsage();
     }
   );
-} 
+}
+
+
+// ══════════════════════════════════════════════
+//  CONFIRM MODAL (generic)
+// ══════════════════════════════════════════════
 
 let pendingConfirmAction = null;
 
 function showConfirm(title, message, btnClass, action) {
-  document.getElementById('confirm-title').textContent  = title;
-  document.getElementById('confirm-message').innerHTML  = message;
-  document.getElementById('confirm-ok-btn').className   = btnClass;
+  document.getElementById('confirm-title').textContent   = title;
+  document.getElementById('confirm-message').innerHTML   = message;
+  document.getElementById('confirm-ok-btn').className    = btnClass;
   pendingConfirmAction = action;
   document.getElementById('confirm-modal').classList.add('open');
 }
@@ -382,21 +411,18 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   });
 });
 
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  if (!confirm('Are you sure you want to logout?')) return;
-  localStorage.removeItem('nbsc_session');
-  window.location.href = '../index.html';
-});
 
-// Utils
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+
 function escHtml(str) {
   return String(str)
-    .replace(/&/g,  '&amp;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
-    .replace(/"/g,  '&quot;')
-    .replace(/'/g,  '&#039;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function formatTime(dateStr) {
@@ -407,11 +433,12 @@ function formatTime(dateStr) {
     + ' ' + d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 }
 
-// Init
-seedDefaultAdmin();
-checkAdminAuth();
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+
 loadAdminProfile();
 updateStats();
 renderDashboard();
 renderUsersTable();
- 

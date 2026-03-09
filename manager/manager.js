@@ -626,6 +626,12 @@ function initManagerMap() {
           ? adminSatelliteLayer : adminStandardLayer;
         adminCurrentTile.addTo(adminMap);
         btn.innerHTML = adminCurrentTile === adminSatelliteLayer ? '🗺️' : '🛰️';
+        const container = adminMap.getContainer();
+        if (adminCurrentTile === adminSatelliteLayer) {
+          container.classList.add('satellite-active');
+        } else {
+          container.classList.remove('satellite-active');
+        }
       });
       L.DomEvent.disableClickPropagation(div);
       return div;

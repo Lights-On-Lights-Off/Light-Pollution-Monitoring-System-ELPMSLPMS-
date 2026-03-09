@@ -372,6 +372,15 @@ class UserDashboard {
 
     L.control.layers({ 'Colored Map': colored, 'Satellite View': satellite }, null, { position: 'bottomright' }).addTo(this.map);
 
+    this.map.on('baselayerchange', e => {
+      const container = this.map.getContainer();
+      if (e.name === 'Satellite View') {
+        container.classList.add('satellite-active');
+      } else {
+        container.classList.remove('satellite-active');
+      }
+    });
+
     L.rectangle(bounds, { color: '#0d6efd', weight: 2, fillOpacity: 0.05 })
       .addTo(this.map).bindPopup('Northern Bukidnon State College');
 
