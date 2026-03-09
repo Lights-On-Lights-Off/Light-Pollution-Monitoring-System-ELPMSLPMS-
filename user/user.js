@@ -1,4 +1,4 @@
-// Animated Background
+// ── Animated Background ──
 (function () {
   const canvas = document.getElementById('bg-canvas');
   if (!canvas) return;
@@ -55,7 +55,8 @@
   loop();
 })();
 
-// Capitalize helper
+// ── Pollution Colors ──
+// ── Capitalize first letter ──
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
 const POLLUTION_COLORS = {
@@ -64,16 +65,16 @@ const POLLUTION_COLORS = {
   high:     '#ef4444'
 };
 
-// User Dashboard Class
+// ── User Dashboard Class ──
 class UserDashboard {
   constructor() {
-    this.currentUser     = null;
-    this.requests        = [];
-    this.notifications   = [];
+    this.currentUser  = null;
+    this.requests     = [];
+    this.notifications = [];
     this.campusBuildings = [];
-    this.map             = null;
-    this.mapMarkers      = [];
-    this.currentTab      = 'map';
+    this.map          = null;
+    this.mapMarkers   = [];
+    this.currentTab   = 'map';
     this.init();
   }
 
@@ -82,31 +83,31 @@ class UserDashboard {
     this.initTabs();
     this.bindEvents();
     this.loadUserData();
-    this.initMapTab();
+    this.initMapTab(); // init map immediately since it's the default tab
   }
 
-  // Auth
+  // ── Auth ──
   checkAuth() {
     const raw = localStorage.getItem('nbsc_session');
-    if (!raw) { window.location.href = 'index.html'; return; }
+    if (!raw) { window.location.href = '../index.html'; return; }
     this.currentUser = JSON.parse(raw);
   }
 
-  // Nav UI
+  // ── Nav UI ──
   updateNavUI() {
     if (!this.currentUser) return;
-    const name    = this.currentUser.name  || this.currentUser.email.split('@')[0];
-    const email   = this.currentUser.email || '';
+    const name  = this.currentUser.name  || this.currentUser.email.split('@')[0];
+    const email = this.currentUser.email || '';
     const initial = name.charAt(0).toUpperCase();
 
-    document.getElementById('avatarInitial').textContent = initial;
-    document.getElementById('pillName').textContent      = name;
-    document.getElementById('pillEmail').textContent     = email;
-    document.getElementById('dropdownName').textContent  = name;
-    document.getElementById('dropdownEmail').textContent = email;
+    document.getElementById('avatarInitial').textContent  = initial;
+    document.getElementById('pillName').textContent       = name;
+    document.getElementById('pillEmail').textContent      = email;
+    document.getElementById('dropdownName').textContent   = name;
+    document.getElementById('dropdownEmail').textContent  = email;
   }
 
-  // Tabs
+  // ── Tabs ──
   initTabs() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -128,7 +129,7 @@ class UserDashboard {
     if (name === 'map' && !this.map) this.initMapTab();
   }
 
-  // Load user data
+  // ── Load user data ──
   loadUserData() {
     this.updateNavUI();
     this.prefillForm();
@@ -143,7 +144,7 @@ class UserDashboard {
     if (emailEl && this.currentUser.email) emailEl.value = this.currentUser.email;
   }
 
-  // Requests
+  // ── Requests ──
   loadRequests() {
     const all = JSON.parse(localStorage.getItem('nbscDataRequests') || '[]');
     this.requests = all.filter(r => r.email === this.currentUser.email);
@@ -202,6 +203,7 @@ class UserDashboard {
     const r = this.requests.find(req => req.id === requestId);
     if (!r || r.status !== 'approved') return;
 
+    // Find the matching building
     const locationLabel = this.formatLocation(r.location);
     const building = this.campusBuildings.find(b =>
       b.name.toLowerCase() === locationLabel.toLowerCase() ||
@@ -214,33 +216,39 @@ class UserDashboard {
       )
     );
 
+    // Build CSV rows
     const now     = new Date();
     const rows    = [];
     const headers = ['Timestamp', 'Building', 'Location (Lat)', 'Location (Lng)', 'Lux Reading', 'Pollution Level', 'Status', 'Data Type'];
     rows.push(headers.join(','));
 
     if (building) {
-      const start     = r.startDate ? new Date(r.startDate) : new Date(now - 7 * 86400000);
-      const end       = r.endDate   ? new Date(r.endDate)   : now;
-      const diffMs    = end - start;
-      const intervals = Math.min(Math.floor(diffMs / 3600000), 168);
+      // Generate simulated historical readings for the requested date range
+      const start = r.startDate ? new Date(r.startDate) : new Date(now - 7 * 86400000);
+      const end   = r.endDate   ? new Date(r.endDate)   : now;
+      const diffMs = end - start;
+      const intervals = Math.min(Math.floor(diffMs / (3600000)), 168); // max 168 rows (hourly for 7 days)
 
       for (let i = 0; i <= intervals; i++) {
-        const ts    = new Date(start.getTime() + (i / intervals) * diffMs);
-        const lux   = Math.max(5, Math.min(150, building.lux + (Math.random() - 0.5) * 20)).toFixed(1);
-        const level = parseFloat(lux) < 30 ? 'Low' : parseFloat(lux) < 80 ? 'Moderate' : 'High';
+        const ts      = new Date(start.getTime() + (i / intervals) * diffMs);
+        const lux     = Math.max(5, Math.min(150, building.lux + (Math.random() - 0.5) * 20)).toFixed(1);
+        const level   = parseFloat(lux) < 30 ? 'Low' : parseFloat(lux) < 80 ? 'Moderate' : 'High';
         const [lat, lng] = Array.isArray(building.coordinates)
           ? building.coordinates
           : [building.lat, building.lng];
         rows.push([
           ts.toISOString(),
           `"${building.name}"`,
-          lat, lng, lux, level,
+          lat,
+          lng,
+          lux,
+          level,
           building.online ? 'Online' : 'Offline',
           r.dataType || 'Light Pollution'
         ].join(','));
       }
     } else {
+      // Fallback: single summary row with request info only
       rows.push([
         now.toISOString(),
         `"${r.location || 'Unknown'}"`,
@@ -249,6 +257,7 @@ class UserDashboard {
       ].join(','));
     }
 
+    // Metadata header block
     const meta = [
       `# NBSC Light Pollution Monitoring System`,
       `# Request ID: ${r.id}`,
@@ -262,12 +271,12 @@ class UserDashboard {
       `#`,
     ].join('\n');
 
-    const csv  = meta + '\n' + rows.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `NBSC_LightData_${locationLabel.replace(/\s+/g, '_')}_${r.id}.csv`;
+    const csv      = meta + '\n' + rows.join('\n');
+    const blob     = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url      = URL.createObjectURL(blob);
+    const a        = document.createElement('a');
+    a.href         = url;
+    a.download     = `NBSC_LightData_${(locationLabel).replace(/\s+/g, '_')}_${r.id}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -282,14 +291,14 @@ class UserDashboard {
   }
 
   saveRequests() {
-    const all    = JSON.parse(localStorage.getItem('nbscDataRequests') || '[]');
+    const all   = JSON.parse(localStorage.getItem('nbscDataRequests') || '[]');
     const others = all.filter(r => r.email !== this.currentUser.email);
     localStorage.setItem('nbscDataRequests', JSON.stringify([...others, ...this.requests]));
   }
 
   submitRequest(e) {
     e.preventDefault();
-    const fd  = new FormData(e.target);
+    const fd = new FormData(e.target);
     const req = {
       id:              'REQ-' + Date.now(),
       email:           this.currentUser.email,
@@ -312,7 +321,7 @@ class UserDashboard {
     setTimeout(() => this.switchTab('requests'), 1000);
   }
 
-  // Notifications
+  // ── Notifications ──
   loadNotifications() {
     const all = JSON.parse(localStorage.getItem('userNotifications') || '[]');
     this.notifications = all.filter(n => n.email === this.currentUser.email);
@@ -338,7 +347,7 @@ class UserDashboard {
     `).join('');
   }
 
-  // Map
+  // ── Map ──
   initMapTab() {
     const el = document.getElementById('user-campus-map');
     if (!el || this.map) return;
@@ -362,6 +371,7 @@ class UserDashboard {
     );
 
     L.control.layers({ 'Colored Map': colored, 'Satellite View': satellite }, null, { position: 'bottomright' }).addTo(this.map);
+
     L.rectangle(bounds, { color: '#0d6efd', weight: 2, fillOpacity: 0.05 })
       .addTo(this.map).bindPopup('Northern Bukidnon State College');
 
@@ -374,12 +384,12 @@ class UserDashboard {
     const saved = localStorage.getItem('nbscBuildings');
     if (saved) { this.campusBuildings = JSON.parse(saved); return; }
     this.campusBuildings = [
-      { id:'B01', name:'SWDC Building',     coordinates:[8.360309105794068, 124.86777742438035], pollutionLevel:'moderate', description:'Main administrative offices',           lux:55,  online:true },
-      { id:'B02', name:'NBSC Covered Court', coordinates:[8.360122375785208, 124.86894170546891], pollutionLevel:'moderate', description:'Sports and events facility',           lux:62,  online:true },
-      { id:'B03', name:'NBSC Library',       coordinates:[8.359264030617997, 124.86789449725583], pollutionLevel:'low',      description:'Main library and study center',        lux:18,  online:true },
-      { id:'B04', name:'NBSC Clinic',        coordinates:[8.359157605365368, 124.86817955256836], pollutionLevel:'moderate', description:'Medical services and health center',    lux:47,  online:true },
-      { id:'B05', name:'BSBA Building',      coordinates:[8.359096410833255, 124.86842964826772], pollutionLevel:'high',     description:'Business and administration classrooms', lux:130, online:true },
-      { id:'B06', name:'ICS Laboratory',     coordinates:[8.359221460529115, 124.86905085372219], pollutionLevel:'moderate', description:'Computer science and IT laboratory',    lux:70,  online:true }
+      { id:'B01', name:'SWDC Building',            coordinates:[8.360309105794068, 124.86777742438035], pollutionLevel:'moderate', description:'Main administrative offices',        lux:55, online:true },
+      { id:'B02', name:'NBSC Covered Court',        coordinates:[8.360122375785208, 124.86894170546891], pollutionLevel:'moderate', description:'Sports and events facility',          lux:62, online:true },
+      { id:'B03', name:'NBSC Library',              coordinates:[8.359264030617997, 124.86789449725583], pollutionLevel:'low',      description:'Main library and study center',       lux:18, online:true },
+      { id:'B04', name:'NBSC Clinic',               coordinates:[8.359157605365368, 124.86817955256836], pollutionLevel:'moderate', description:'Medical services and health center',   lux:47, online:true },
+      { id:'B05', name:'BSBA Building',             coordinates:[8.359096410833255, 124.86842964826772], pollutionLevel:'high',     description:'Business and administration classrooms', lux:130, online:true },
+      { id:'B06', name:'ICS Laboratory',            coordinates:[8.359221460529115, 124.86905085372219], pollutionLevel:'moderate', description:'Computer science and IT laboratory',   lux:70, online:true }
     ];
   }
 
@@ -390,7 +400,7 @@ class UserDashboard {
     this.campusBuildings
       .filter(b => filter === 'all' || b.pollutionLevel === filter)
       .forEach(b => {
-        const color  = POLLUTION_COLORS[b.pollutionLevel];
+        const color = POLLUTION_COLORS[b.pollutionLevel];
         const marker = L.circleMarker(b.coordinates, {
           radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9
         }).addTo(this.map);
@@ -425,22 +435,25 @@ class UserDashboard {
     });
   }
 
-  // Event Bindings
+  // ── Event Bindings ──
   bindEvents() {
-    const pill     = document.getElementById('userPillToggle');
+    // Nav dropdown
+    const pill    = document.getElementById('userPillToggle');
     const dropdown = document.getElementById('userDropdown');
     pill?.addEventListener('click', e => { e.stopPropagation(); dropdown?.classList.toggle('open'); });
     document.addEventListener('click', () => dropdown?.classList.remove('open'));
 
+    // Logout
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
       localStorage.removeItem('nbsc_session');
-      window.location.href = 'index.html';
+      window.location.href = '../index.html';
     });
 
+    // Request form
     document.getElementById('data-request-form')?.addEventListener('submit', e => this.submitRequest(e));
   }
 
-  // Helpers
+  // ── Helpers ──
   formatLocation(loc) {
     const map = {
       'NBSC LIBRARY': 'NBSC Library', 'NBSC CLINIC': 'NBSC Clinic',
@@ -460,14 +473,14 @@ class UserDashboard {
 
   timeAgo(ts) {
     const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
-    if (diff < 60)    return 'Just now';
-    if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    return `${Math.floor(diff/86400)}d ago`;
   }
 }
 
-// Boot
+// ── Boot ──
 document.addEventListener('DOMContentLoaded', () => {
   window.dashboard = new UserDashboard();
 });
