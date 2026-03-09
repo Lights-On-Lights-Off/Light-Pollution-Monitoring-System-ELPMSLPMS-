@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Dashboard — NBSC Light Pollution Monitoring</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --stroke: rgba(255,255,255,0.08);
+      --radius: 10px;
+      --accent: #0d6efd;
+      --card-bg: #050203;
+      --body-bg: #252324;
+      --text: #fff;
+      --muted: #a5a5a5;
+      --low: #22c55e;
+      --moderate: #f59e0b;
+      --high: #ef4444;
+    }
+    html, body {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      background: var(--body-bg);
+      color: var(--text);
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 72px;
+      background: #050203;
+      border-bottom: 1px solid var(--stroke);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: .4px;
+      color: #fff;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .brand-badge {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      flex-shrink: 0;
+    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+
+    .user-menu-wrapper { position: relative; }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 14px 6px 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--stroke);
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .user-pill:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .user-avatar-circle {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .user-pill-info { display: flex; flex-direction: column; line-height: 1.25; }
+    .user-pill-name  { font-size: 1rem; font-weight: 600; color: #fff; }
+    .user-pill-email { font-size: 0.95rem; color: var(--muted); }
+
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 230px;
+      background: #1a1818;
+      border: 1px solid var(--stroke);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      overflow: hidden;
+      z-index: 9999;
+      animation: fadeIn 0.15s ease;
+    }
+    .user-dropdown.open { display: block; }
+    .dropdown-user-info {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--stroke);
+    }
+    .dropdown-user-name  { font-size: 1.15rem; font-weight: 600; color: #fff; }
+    .dropdown-user-email { font-size: 0.9rem; color: var(--muted); margin-top: 2px; }
+    .dropdown-item-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 11px 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      color: #e0e0e0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s;
+    }
+    .dropdown-item-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .dropdown-item-btn.danger { color: #fca5a5; }
+    .dropdown-item-btn.danger:hover { background: rgba(239,68,68,0.1); }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+    .dashboard-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 16px 24px;
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: var(--card-bg);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 5px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px 14px;
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      color: var(--muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .tab-btn.active { background: rgba(13,110,253,0.15); color: #fff; border-bottom: 2px solid var(--accent); }
+
+    .tab-content { display: none; animation: fadeIn 0.2s ease; }
+    .tab-content.active { display: block; }
+
+    .dash-card {
+      background: var(--card-bg);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .dash-card h4 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+    .dash-card .card-sub {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .request-item {
+      background: #0d0c0e;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .request-item:hover { border-color: rgba(13,110,253,0.3); }
+    .request-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .request-id { font-size: 0.95rem; font-weight: 600; color: var(--accent); font-family: monospace; }
+    .status-badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.97rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .status-badge.pending  { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .status-badge.approved { background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .status-badge.rejected { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .request-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .meta-item label { font-size: 0.95rem; color: var(--muted); display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .meta-item span  { font-size: 1rem; color: #e0e0e0; }
+    .btn-delete {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 6px;
+      color: #f87171;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-delete:hover { background: rgba(239,68,68,0.2); }
+
+    .request-item-actions {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid var(--stroke);
+    }
+
+    .btn-download {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 6px;
+      color: #4ade80;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem; font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.14s;
+    }
+    .btn-download:hover  { background: rgba(34,197,94,0.22); transform: translateY(-1px); }
+    .btn-download:active { transform: scale(0.97); }
+
+    .empty-state {
+      text-align: center;
+      padding: 36px 20px;
+      color: var(--muted);
+      font-size: 1.15rem;
+    }
+    .empty-state .empty-icon { font-size: 2.4rem; margin-bottom: 10px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: rgba(255,255,255,0.18); }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(13,110,253,0.12);
+    }
+    .form-group select option { background: #1a1818; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .form-actions { display: flex; gap: 10px; margin-top: 6px; }
+    .btn-primary {
+      padding: 10px 24px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: #2979ff; transform: translateY(-1px); }
+    .btn-secondary {
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.06); color: #fff; }
+
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #0d0c0e;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .notif-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .notif-text { font-size: 1rem; color: #e0e0e0; }
+    .notif-time { font-size: 0.97rem; color: var(--muted); margin-top: 3px; }
+
+    .map-controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .map-filter-group { display: flex; align-items: center; gap: 10px; }
+    .map-filter-group label { font-size: 1rem; color: var(--muted); white-space: nowrap; }
+    .filter-select {
+      background: #0d0c0e;
+      color: #fff;
+      border: 1px solid var(--stroke);
+      border-radius: 7px;
+      padding: 7px 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      outline: none;
+    }
+    .map-btn-group { display: flex; gap: 8px; }
+    .map-btn {
+      padding: 7px 16px;
+      background: transparent;
+      border: 1px solid var(--stroke);
+      border-radius: 7px;
+      color: var(--muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .map-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+
+    #user-campus-map {
+      width: 100%;
+      height: calc(100vh - 280px);
+      min-height: 340px;
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+    }
+
+    .map-legend {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.97rem; color: var(--muted); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .legend-dot.low      { background: var(--low); }
+    .legend-dot.moderate { background: var(--moderate); }
+    .legend-dot.high     { background: var(--high); }
+
+    @media (max-width: 768px) {
+      .navbar { padding: 0 14px; }
+      .nav-brand { font-size: 1rem; }
+      .user-pill-email { display: none; }
+      .tab-btn span.tab-label { display: none; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      .date-row { grid-template-columns: 1fr; }
+      #user-campus-map { height: 300px; }
+    }
+
+    button, a, select, input, textarea { transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s, transform 0.14s, opacity 0.18s; }
+    button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: 2px;
+    }
+    button:active, .tab-btn:active { transform: scale(0.97); }
+    .tab-btn { transition: background 0.18s, color 0.18s, transform 0.14s; }
+    .tab-btn:hover { transform: translateY(-1px); }
+    .tab-btn.active:hover { transform: none; }
+    .dash-card { transition: border-color 0.2s, box-shadow 0.2s; }
+    .dash-card:hover { border-color: rgba(13,110,253,0.25); box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+    select { cursor: pointer; }
+    select:hover { border-color: rgba(255,255,255,0.25) !important; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(13,110,253,0.15) !important; }
+    .request-item { transition: border-color 0.18s, box-shadow 0.18s; }
+    .request-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+    .notif-item { transition: border-color 0.18s, background 0.18s; }
+    .notif-item:hover { border-color: rgba(13,110,253,0.25); background: rgba(13,110,253,0.04); }
+    .leaflet-interactive { cursor: pointer; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+    .leaflet-layer,
+    .leaflet-control-zoom-in,
+    .leaflet-control-zoom-out,
+    .leaflet-control-attribution {
+      filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="user.html" class="nav-brand">
+      <span class="brand-badge"></span>
+      Environmental Light Pollution Monitoring System
+    </a>
+    <div class="nav-right">
+      <div class="user-menu-wrapper">
+        <div class="user-pill" id="userPillToggle">
+          <div class="user-avatar-circle" id="avatarInitial">U</div>
+          <div class="user-pill-info">
+            <span class="user-pill-name" id="pillName">User</span>
+            <span class="user-pill-email" id="pillEmail">—</span>
+          </div>
+          <svg style="margin-left:4px;opacity:0.5;" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M1.5 5.5l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="user-dropdown" id="userDropdown">
+          <div class="dropdown-user-info">
+            <div class="dropdown-user-name" id="dropdownName">User</div>
+            <div class="dropdown-user-email" id="dropdownEmail">—</div>
+          </div>
+          <button class="dropdown-item-btn" onclick="window.location.href='user.html'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4h3v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L8.354 1.146z"/>
+            </svg>
+            Back to Dashboard
+          </button>
+          <button class="dropdown-item-btn danger" id="logoutBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+              <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+            </svg>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard-wrapper">
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="map">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.502.502 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103z"/>
+        </svg>
+        <span class="tab-label">Campus Map</span>
+      </button>
+      <button class="tab-btn" data-tab="requests">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+          <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3z"/>
+        </svg>
+        <span class="tab-label">My Requests</span>
+      </button>
+      <button class="tab-btn" data-tab="new-request">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+          <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+        </svg>
+        <span class="tab-label">New Request</span>
+      </button>
+      <button class="tab-btn" data-tab="notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+        </svg>
+        <span class="tab-label">Notifications</span>
+      </button>
+    </div>
+
+    <!-- CAMPUS MAP TAB -->
+    <div class="tab-content active" id="map-tab">
+      <div class="dash-card">
+        <h4>Campus Light Pollution Map</h4>
+        <p class="card-sub">Real-time light pollution data across the NBSC campus</p>
+        <div class="map-controls-bar">
+          <div class="map-filter-group">
+            <label for="user-map-filter">Filter by Pollution Level:</label>
+            <select id="user-map-filter" class="filter-select">
+              <option value="all">All Buildings</option>
+              <option value="low">Low</option>
+              <option value="moderate">Moderate</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="map-btn-group">
+            <button class="map-btn" id="refresh-user-map-btn">↻ Refresh</button>
+            <button class="map-btn" id="reset-user-map-btn">⊙ Reset View</button>
+          </div>
+        </div>
+        <div id="user-campus-map"></div>
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-dot low"></div> Low</div>
+          <div class="legend-item"><div class="legend-dot moderate"></div> Moderate</div>
+          <div class="legend-item"><div class="legend-dot high"></div> High</div>
+        </div>
+      </div>
+    </div>
+
+        <!-- MY REQUESTS TAB -->
+    <div class="tab-content" id="requests-tab">
+      <div class="dash-card">
+        <h4>My Data Requests</h4>
+        <p class="card-sub">Track the status of your submitted requests</p>
+        <div id="user-requests-list"></div>
+      </div>
+    </div>
+
+    <!-- NEW REQUEST TAB -->
+    <div class="tab-content" id="new-request-tab">
+      <div class="dash-card">
+        <h4>Submit New Data Request</h4>
+        <p class="card-sub">Request light pollution data for research or academic purposes</p>
+        <form id="data-request-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="full-name">Full Name *</label>
+              <input type="text" id="full-name" name="fullName" placeholder="Juan dela Cruz" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address *</label>
+              <input type="email" id="email" name="email" placeholder="you@example.com" required />
+            </div>
+            <div class="form-group">
+              <label for="organization">Organization *</label>
+              <input type="text" id="organization" name="organization" placeholder="e.g. NBSC" required />
+            </div>
+            <div class="form-group">
+              <label for="location">Campus Location *</label>
+              <select id="location" name="location" required>
+                <option value="">Select Location</option>
+                <option value="SWDC Building">SWDC Building</option>
+                <option value="NBSC LIBRARY">NBSC Library</option>
+                <option value="NBSC CLINIC">NBSC Clinic</option>
+                <option value="BSBA BUILDING">BSBA Building</option>
+                <option value="ICS LABORATORY">ICS Laboratory</option>
+                <option value="Northern Bukidnon State College Covered Court">Covered Court</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="data-type">Data Type *</label>
+              <select id="data-type" name="dataType" required>
+                <option value="">Select Data Type</option>
+                <option value="Historical Data">Historical Data</option>
+                <option value="Live Data">Live Data</option>
+                <option value="Comparison Data">Comparison Data</option>
+                <option value="Impact Report">Impact Report</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="purpose">Purpose *</label>
+              <select id="purpose" name="purpose" required>
+                <option value="">Select Purpose</option>
+                <option value="Research Study">Research Study</option>
+                <option value="Academic Project">Academic Project</option>
+                <option value="Thesis/Dissertation">Thesis/Dissertation</option>
+                <option value="Environmental Assessment">Environmental Assessment</option>
+                <option value="Policy Development">Policy Development</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Date Range *</label>
+              <div class="date-row">
+                <div class="form-group">
+                  <label for="start-date" style="font-size:0.82rem;">From</label>
+                  <input type="date" id="start-date" name="startDate" required />
+                </div>
+                <div class="form-group">
+                  <label for="end-date" style="font-size:0.82rem;">To</label>
+                  <input type="date" id="end-date" name="endDate" required />
+                </div>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label for="additional-notes">Additional Notes</label>
+              <textarea id="additional-notes" name="additionalNotes" placeholder="Any additional information about your request…"></textarea>
+            </div>
+          </div>
+          <div class="form-actions" style="margin-top:16px;">
+            <button type="submit" class="btn-primary">Submit Request</button>
+            <button type="reset" class="btn-secondary">Clear Form</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS TAB -->
+    <div class="tab-content" id="notifications-tab">
+      <div class="dash-card">
+        <h4>Notifications</h4>
+        <p class="card-sub">Updates on your requests and system announcements</p>
+        <div id="notifications-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /dashboard-wrapper -->
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="user.js"></script>
+</body>
+</html>
