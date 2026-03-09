@@ -1,13 +1,9 @@
-// ══════════════════════════════════════════════
 //  NBSC Admin App — admin.js
 //  All localStorage paths relative to the
 //  shared system (same keys as manager/user)
-// ══════════════════════════════════════════════
 
-// ── Capitalize helper ──
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
-// ── Animated Background Canvas ──────────────
 (function () {
   const canvas = document.getElementById('bg-canvas');
   if (!canvas) return;
@@ -71,9 +67,7 @@ function loadAdminProfile() {
 }
 
 
-// ══════════════════════════════════════════════
 //  NAVIGATION
-// ══════════════════════════════════════════════
 
 const PAGE_LABELS = {
   dashboard: { title: 'Dashboard',        sub: 'System overview' },
@@ -97,9 +91,7 @@ function navigate(btn) {
 }
 
 
-// ══════════════════════════════════════════════
 //  DATA HELPERS
-// ══════════════════════════════════════════════
 
 function getUsers() {
   try { return JSON.parse(localStorage.getItem('nbsc_users')) || []; }
@@ -128,9 +120,7 @@ function getActivityLog() {
 }
 
 
-// ══════════════════════════════════════════════
 //  STATS
-// ══════════════════════════════════════════════
 
 function updateStats() {
   const users    = getUsers().filter(u => u.role !== 'admin');
@@ -148,9 +138,7 @@ function updateStats() {
 }
 
 
-// ══════════════════════════════════════════════
 //  DASHBOARD
-// ══════════════════════════════════════════════
 
 function renderDashboard() {
   renderRecentUsers();
@@ -210,9 +198,7 @@ function renderActivityFeed() {
 }
 
 
-// ══════════════════════════════════════════════
 //  USERS MANAGEMENT
-// ══════════════════════════════════════════════
 
 function renderUsersTable() {
   const filter = document.getElementById('role-filter').value;
@@ -256,7 +242,6 @@ function renderUsersTable() {
 }
 
 
-// ── Edit Role Modal ──────────────────────────
 let editingEmail = null;
 
 function openRoleModal(email) {
@@ -290,7 +275,6 @@ function saveRole() {
 }
 
 
-// ── Delete User ──────────────────────────────
 let pendingDeleteEmail = null;
 
 function confirmDeleteUser(email) {
@@ -319,9 +303,7 @@ function doDeleteUser() {
 }
 
 
-// ══════════════════════════════════════════════
 //  SYSTEM SETTINGS
-// ══════════════════════════════════════════════
 
 function renderStorageUsage() {
   let total = 0;
@@ -376,9 +358,7 @@ function confirmResetBuildings() {
 }
 
 
-// ══════════════════════════════════════════════
 //  CONFIRM MODAL (generic)
-// ══════════════════════════════════════════════
 
 let pendingConfirmAction = null;
 
@@ -412,9 +392,7 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 });
 
 
-// ══════════════════════════════════════════════
 //  UTILS
-// ══════════════════════════════════════════════
 
 function escHtml(str) {
   return String(str)
@@ -434,9 +412,7 @@ function formatTime(dateStr) {
 }
 
 
-// ══════════════════════════════════════════════
 //  INIT
-// ══════════════════════════════════════════════
 
 loadAdminProfile();
 updateStats();

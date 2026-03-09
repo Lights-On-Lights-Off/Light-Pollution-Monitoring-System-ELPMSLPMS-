@@ -1,4 +1,3 @@
-// ── Campus Center & Bounds ──
 const CAMPUS_CENTER = [8.359999, 124.868103];
 
 const CAMPUS_BOUNDS = L.latLngBounds(
@@ -6,9 +5,7 @@ const CAMPUS_BOUNDS = L.latLngBounds(
   [8.365000, 124.876000]
 );
 
-// ── Pollution Level Colors ──
 
-// ── Capitalize first letter ──
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 const POLLUTION_COLORS = {
   low:      "#22c55e",   // green
@@ -16,7 +13,6 @@ const POLLUTION_COLORS = {
   high:     "#ef4444"    // red
 };
 
-// ── Campus Buildings (sensor data) ──
 let campusBuildings = [];
 
 function loadCampusBuildings() {
@@ -85,7 +81,6 @@ function loadCampusBuildings() {
 
 loadCampusBuildings();
 
-// ── Map Init ──
 const map = L.map("map", {
   center: CAMPUS_CENTER,
   zoom: 18,
@@ -128,7 +123,6 @@ map.on('baselayerchange', e => {
   }
 });
 
-// ── Map Markers ──
 const lightMarkers = {};
 
 function buildPopupHTML(building) {
@@ -168,7 +162,6 @@ campusBuildings.forEach(building => {
   lightMarkers[building.id] = marker;
 });
 
-// ── Status Distribution Chart ──
 const statusChart = new Chart(document.getElementById("statusChart"), {
   type: "pie",
   data: {
@@ -207,7 +200,6 @@ function updateKPIsAndStatusChart() {
 
 updateKPIsAndStatusChart();
 
-// ── Light Intensity Trend Chart ──
 const lightTrendChart = new Chart(document.getElementById("flowChart"), {
   type: "line",
   data: {
@@ -238,7 +230,6 @@ const lightTrendChart = new Chart(document.getElementById("flowChart"), {
   }
 });
 
-// ── Helpers ──
 function getLevelFromLux(lux) {
   // Use weighted random instead of lux thresholds for controlled distribution
   const r = Math.random();
@@ -296,7 +287,6 @@ function addLightLogEntry(building) {
   }
 }
 
-// ── Simulate Real-time Updates every 5 seconds ──
 setInterval(() => {
   const time = new Date().toLocaleTimeString();
   lightTrendChart.data.labels.push(time);
@@ -326,10 +316,8 @@ setInterval(() => {
   updateKPIsAndStatusChart();
 }, 5000);
 
-// ── DOM References ──
 const logBody = document.getElementById("logBody");
 
-// ── Session / Auth ──
 function getSession() {
   const raw = localStorage.getItem('nbsc_session');
   return raw ? JSON.parse(raw) : null;
@@ -349,7 +337,6 @@ function updateNavForSession() {
   `;
 }
 
-// ── User Dropdown Toggle ──
 const userMenuToggle = document.getElementById("userMenuToggle");
 const userDropdown = document.getElementById("userDropdown");
 
@@ -365,7 +352,6 @@ document.addEventListener("click", () => {
 // Init nav state on load
 updateNavForSession();
 
-// ── Filter Dropdown ──
 const pollutionFilter = document.getElementById("pollutionFilter");
 
 pollutionFilter.addEventListener("change", () => {
@@ -381,7 +367,6 @@ pollutionFilter.addEventListener("change", () => {
   });
 });
 
-// ── Request Data Button ── redirects to login if not authenticated
 document.getElementById("requestDataBtn").addEventListener("click", () => {
   const session = getSession();
   if (session) {

@@ -1,4 +1,3 @@
-// ── Animated Background ──
 (function () {
   const canvas = document.getElementById('bg-canvas');
   if (!canvas) return;
@@ -55,8 +54,6 @@
   loop();
 })();
 
-// ── Pollution Colors ──
-// ── Capitalize first letter ──
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
 const POLLUTION_COLORS = {
@@ -65,7 +62,6 @@ const POLLUTION_COLORS = {
   high:     '#ef4444'
 };
 
-// ── User Dashboard Class ──
 class UserDashboard {
   constructor() {
     this.currentUser  = null;
@@ -489,7 +485,6 @@ class UserDashboard {
   }
 }
 
-// ── Boot ──
 document.addEventListener('DOMContentLoaded', () => {
   window.dashboard = new UserDashboard();
 });

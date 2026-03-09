@@ -247,7 +247,7 @@ html, body {
     height: calc(100vh - 72px);
     padding: 6px 14px 14px;
     box-sizing: border-box;
-    overflow-y: auto; 
+    overflow-y: auto;
 }
 .top-row {
     display: grid;

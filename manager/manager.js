@@ -1,8 +1,5 @@
-// ══════════════════════════════════════════════
 //  NBSC Admin Dashboard — manager.js
-// ══════════════════════════════════════════════
 
-// ── Animated Background Canvas ──────────────
 (function () {
   const canvas = document.getElementById('bg-canvas');
   if (!canvas) return;
@@ -60,12 +57,9 @@
 })();
 
 
-// ══════════════════════════════════════════════
 //  DATA
-// ══════════════════════════════════════════════
 
 
-// ── Capitalize first letter ──
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 const POLLUTION_COLORS = { low: '#22c55e', moderate: '#f59e0b', high: '#ef4444' };
 
@@ -101,9 +95,7 @@ let locationPickerMap    = null;
 let locationPickerMarker = null;
 
 
-// ══════════════════════════════════════════════
 //  INIT
-// ══════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {
   seedDefaultManager();
@@ -118,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
   checkForNewRequests();
 });
 
-// ── Seed default manager account ────────────
 function seedDefaultManager() {
   const users = JSON.parse(localStorage.getItem('nbsc_users') || '[]');
   const exists = users.find(u => u.email === 'manager@example.com');
@@ -133,7 +124,6 @@ function seedDefaultManager() {
   }
 }
 
-// ── Auth guard: redirect to index if no manager session ──
 function checkManagerAuth() {
   const raw = localStorage.getItem('nbsc_session');
   if (!raw) {
@@ -151,9 +141,7 @@ function checkManagerAuth() {
 }
 
 
-// ══════════════════════════════════════════════
 //  PROFILE
-// ══════════════════════════════════════════════
 
 function loadManagerProfile() {
   const raw = localStorage.getItem('nbsc_session');
@@ -168,9 +156,7 @@ function loadManagerProfile() {
 }
 
 
-// ══════════════════════════════════════════════
 //  NAVIGATION
-// ══════════════════════════════════════════════
 
 function initNavigation() {
   document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
@@ -212,9 +198,7 @@ function navigateTo(id) {
 }
 
 
-// ══════════════════════════════════════════════
 //  STATS
-// ══════════════════════════════════════════════
 
 function updateQuickStats() {
   document.getElementById('pending-count').textContent       = requests.filter(r => r.status === 'pending').length;
@@ -224,9 +208,7 @@ function updateQuickStats() {
 }
 
 
-// ══════════════════════════════════════════════
 //  DASHBOARD
-// ══════════════════════════════════════════════
 
 function renderDashboard() {
   renderDashboardRequests();
@@ -278,9 +260,7 @@ function renderDashboardBuildings() {
 }
 
 
-// ══════════════════════════════════════════════
 //  REQUESTS TABLE
-// ══════════════════════════════════════════════
 
 function renderRequestsTable() {
   const tbody  = document.getElementById('requests-tbody');
@@ -331,13 +311,12 @@ function getFilteredRequests() {
 }
 
 
-// ── Request Actions ──────────────────────────
 
 function approveRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
   r.status       = 'approved';
-  r.reviewedDate = new Date().toISOString();
+  r.reviewedAt = new Date().toISOString();
   saveRequests();
   notifyUser(r, 'approved');
   updateQuickStats();
@@ -349,7 +328,7 @@ function denyRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
   r.status       = 'denied';
-  r.reviewedDate = new Date().toISOString();
+  r.reviewedAt = new Date().toISOString();
   saveRequests();
   notifyUser(r, 'denied');
   updateQuickStats();
@@ -370,9 +349,7 @@ function deleteRequest(id) {
 }
 
 
-// ══════════════════════════════════════════════
 //  BUILDINGS GRID
-// ══════════════════════════════════════════════
 
 function renderBuildingsGrid() {
   const grid = document.getElementById('buildings-grid');
@@ -411,7 +388,6 @@ function getFilteredBuildings() {
 }
 
 
-// ── Building Actions ─────────────────────────
 
 function openBuildingModal(isEdit = false) {
   document.getElementById('modal-title').textContent = isEdit ? 'Edit Building' : 'Add Building';
@@ -537,7 +513,6 @@ function deleteBuilding(id) {
 }
 
 
-// ── Building Form Submit ─────────────────────
 
 function handleBuildingSubmit(e) {
   e.preventDefault();
@@ -580,9 +555,7 @@ function handleBuildingSubmit(e) {
 }
 
 
-// ══════════════════════════════════════════════
 //  MAP
-// ══════════════════════════════════════════════
 
 function initManagerMap() {
   if (adminMap) return;
@@ -671,9 +644,7 @@ function renderMapMarkers() {
 }
 
 
-// ══════════════════════════════════════════════
 //  RECYCLE BIN
-// ══════════════════════════════════════════════
 
 function renderRecycleBin() {
   const tbody = document.getElementById('recycle-bin-tbody');
@@ -740,9 +711,7 @@ function emptyRecycleBin() {
 }
 
 
-// ══════════════════════════════════════════════
 //  STORAGE
-// ══════════════════════════════════════════════
 
 function loadRequests() {
   try {
@@ -774,9 +743,7 @@ function notifyUser(request, status) {
 }
 
 
-// ══════════════════════════════════════════════
 //  AUTO-DETECT NEW REQUESTS
-// ══════════════════════════════════════════════
 
 function checkForNewRequests() {
   const flag = localStorage.getItem('managerShowRequests');
@@ -790,9 +757,7 @@ function checkForNewRequests() {
 }
 
 
-// ══════════════════════════════════════════════
 //  EVENT LISTENERS
-// ══════════════════════════════════════════════
 
 function setupEventListeners() {
 
@@ -834,9 +799,7 @@ function setupEventListeners() {
 }
 
 
-// ══════════════════════════════════════════════
 //  HELPERS
-// ══════════════════════════════════════════════
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -854,9 +817,7 @@ function escHtml(str) {
 }
 
 
-// ══════════════════════════════════════════════
 //  GLOBAL EXPORTS (for HTML onclick)
-// ══════════════════════════════════════════════
 
 window.approveRequest           = approveRequest;
 window.denyRequest              = denyRequest;
