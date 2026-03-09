@@ -1,6 +1,8 @@
-// NBSC Admin Dashboard — manager.js
+// ══════════════════════════════════════════════
+//  NBSC Admin Dashboard — manager.js
+// ══════════════════════════════════════════════
 
-// Animated Background Canvas
+// ── Animated Background Canvas ──────────────
 (function () {
   const canvas = document.getElementById('bg-canvas');
   if (!canvas) return;
@@ -57,29 +59,34 @@
   loop();
 })();
 
-// Constants
+
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+
+
+// ── Capitalize first letter ──
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 const POLLUTION_COLORS = { low: '#22c55e', moderate: '#f59e0b', high: '#ef4444' };
 
-// Data
 let requests        = [];
 let deletedRequests = [];
 
 let buildings = [
-  { id: 1, name: 'SWDC Building',  lat: 8.360309, lng: 124.867777, pollutionLevel: 'high',     description: 'Main administrative offices' },
-  { id: 2, name: 'NBSC Library',   lat: 8.359264, lng: 124.867894, pollutionLevel: 'moderate', description: 'Main library and study center' },
-  { id: 3, name: 'NBSC Clinic',    lat: 8.359158, lng: 124.868179, pollutionLevel: 'low',      description: 'Medical services and health center' },
-  { id: 4, name: 'BSBA Building',  lat: 8.359096, lng: 124.868429, pollutionLevel: 'moderate', description: 'Business and administration classrooms' },
-  { id: 5, name: 'ICS Laboratory', lat: 8.359221, lng: 124.869050, pollutionLevel: 'high',     description: 'Computer science and IT laboratory' },
-  { id: 6, name: 'Covered Court',  lat: 8.360122, lng: 124.868941, pollutionLevel: 'low',      description: 'Sports and events facility' },
-  { id: 7, name: 'Cafeteria',      lat: 8.358900, lng: 124.868200, pollutionLevel: 'moderate', description: 'Student dining facility' },
+  { id: 1, name: 'SWDC Building',    lat: 8.360309, lng: 124.867777, pollutionLevel: 'high',     description: 'Main administrative offices' },
+  { id: 2, name: 'NBSC Library',     lat: 8.359264, lng: 124.867894, pollutionLevel: 'moderate', description: 'Main library and study center' },
+  { id: 3, name: 'NBSC Clinic',      lat: 8.359158, lng: 124.868179, pollutionLevel: 'low',      description: 'Medical services and health center' },
+  { id: 4, name: 'BSBA Building',    lat: 8.359096, lng: 124.868429, pollutionLevel: 'moderate', description: 'Business and administration classrooms' },
+  { id: 5, name: 'ICS Laboratory',   lat: 8.359221, lng: 124.869050, pollutionLevel: 'high',     description: 'Computer science and IT laboratory' },
+  { id: 6, name: 'Covered Court',    lat: 8.360122, lng: 124.868941, pollutionLevel: 'low',      description: 'Sports and events facility' },
+  { id: 7, name: 'Cafeteria',        lat: 8.358900, lng: 124.868200, pollutionLevel: 'moderate', description: 'Student dining facility' },
 ];
 
 // State
-let currentSection    = 'dashboard';
-let statusFilter      = 'all';
-let pollutionFilter   = 'all';
-let mapFilter         = 'all';
+let currentSection  = 'dashboard';
+let statusFilter    = 'all';
+let pollutionFilter = 'all';
+let mapFilter       = 'all';
 let editingBuildingId = null;
 
 // Map
@@ -93,7 +100,11 @@ let adminCurrentTile;
 let locationPickerMap    = null;
 let locationPickerMarker = null;
 
-// Init
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', () => {
   seedDefaultManager();
   checkManagerAuth();
@@ -107,8 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
   checkForNewRequests();
 });
 
+// ── Seed default manager account ────────────
 function seedDefaultManager() {
-  const users  = JSON.parse(localStorage.getItem('nbsc_users') || '[]');
+  const users = JSON.parse(localStorage.getItem('nbsc_users') || '[]');
   const exists = users.find(u => u.email === 'manager@example.com');
   if (!exists) {
     users.push({
@@ -121,22 +133,33 @@ function seedDefaultManager() {
   }
 }
 
+// ── Auth guard: redirect to index if no manager session ──
 function checkManagerAuth() {
   const raw = localStorage.getItem('nbsc_session');
-  if (!raw) { window.location.href = 'index.html'; return; }
+  if (!raw) {
+    window.location.href = '../index.html';
+    return;
+  }
   try {
     const session = JSON.parse(raw);
-    if (session.role !== 'manager') window.location.href = 'index.html';
+    if (session.role !== 'manager') {
+      window.location.href = '../index.html';
+    }
   } catch (e) {
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
   }
 }
+
+
+// ══════════════════════════════════════════════
+//  PROFILE
+// ══════════════════════════════════════════════
 
 function loadManagerProfile() {
   const raw = localStorage.getItem('nbsc_session');
   if (!raw) return;
   try {
-    const session  = JSON.parse(raw);
+    const session = JSON.parse(raw);
     const name     = session.name || 'Manager';
     const initials = name.split(' ').map(w => w[0].toUpperCase()).slice(0, 2).join('');
     document.getElementById('manager-avatar').textContent = initials;
@@ -145,6 +168,10 @@ function loadManagerProfile() {
 }
 
 
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+
 function initNavigation() {
   document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
     btn.addEventListener('click', () => navigateTo(btn.dataset.section));
@@ -152,42 +179,54 @@ function initNavigation() {
 }
 
 function navigateTo(id) {
+  // nav highlight
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navBtn = document.querySelector(`.nav-item[data-section="${id}"]`);
   if (navBtn) navBtn.classList.add('active');
 
+  // sections
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(id);
   if (target) target.classList.add('active');
 
+  // page title
   const titles = {
-    'dashboard':   'Dashboard Overview',
-    'requests':    'Data Requests Management',
-    'buildings':   'Building Management',
-    'map':         'Campus Map',
-    'recycle-bin': 'Recycle Bin',
+    'dashboard':  'Dashboard Overview',
+    'requests':   'Data Requests Management',
+    'buildings':  'Building Management',
+    'map':        'Campus Map',
+    'recycle-bin':'Recycle Bin',
   };
   document.getElementById('page-title').textContent = titles[id] || 'Dashboard';
 
+  // render content
   switch (id) {
-    case 'dashboard':   renderDashboard();                       break;
-    case 'requests':    renderRequestsTable();                   break;
-    case 'buildings':   renderBuildingsGrid();                   break;
-    case 'map':         initManagerMap(); renderMapMarkers();    break;
-    case 'recycle-bin': renderRecycleBin();                      break;
+    case 'dashboard':   renderDashboard();      break;
+    case 'requests':    renderRequestsTable();  break;
+    case 'buildings':   renderBuildingsGrid();  break;
+    case 'map':         initManagerMap(); renderMapMarkers(); break;
+    case 'recycle-bin': renderRecycleBin();     break;
   }
 
   currentSection = id;
 }
 
 
+// ══════════════════════════════════════════════
+//  STATS
+// ══════════════════════════════════════════════
+
 function updateQuickStats() {
-  document.getElementById('pending-count').textContent        = requests.filter(r => r.status === 'pending').length;
-  document.getElementById('approved-count').textContent       = requests.filter(r => r.status === 'approved').length;
+  document.getElementById('pending-count').textContent       = requests.filter(r => r.status === 'pending').length;
+  document.getElementById('approved-count').textContent      = requests.filter(r => r.status === 'approved').length;
   document.getElementById('high-pollution-count').textContent = buildings.filter(b => b.pollutionLevel === 'high').length;
   document.getElementById('total-buildings-count').textContent = buildings.length;
 }
 
+
+// ══════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════
 
 function renderDashboard() {
   renderDashboardRequests();
@@ -195,7 +234,7 @@ function renderDashboard() {
 }
 
 function renderDashboardRequests() {
-  const el     = document.getElementById('dashboard-requests');
+  const el = document.getElementById('dashboard-requests');
   const recent = [...requests].reverse().slice(0, 5);
   if (!recent.length) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>No requests yet</p></div>`;
@@ -216,7 +255,7 @@ function renderDashboardRequests() {
 }
 
 function renderDashboardBuildings() {
-  const el     = document.getElementById('dashboard-buildings');
+  const el = document.getElementById('dashboard-buildings');
   const counts = {
     high:     buildings.filter(b => b.pollutionLevel === 'high').length,
     moderate: buildings.filter(b => b.pollutionLevel === 'moderate').length,
@@ -238,13 +277,18 @@ function renderDashboardBuildings() {
   `;
 }
 
+
+// ══════════════════════════════════════════════
+//  REQUESTS TABLE
+// ══════════════════════════════════════════════
+
 function renderRequestsTable() {
-  const tbody    = document.getElementById('requests-tbody');
-  const empty    = document.getElementById('requests-empty');
+  const tbody  = document.getElementById('requests-tbody');
+  const empty  = document.getElementById('requests-empty');
   const filtered = getFilteredRequests();
 
   if (!filtered.length) {
-    tbody.innerHTML     = '';
+    tbody.innerHTML = '';
     empty.style.display = 'block';
     return;
   }
@@ -286,6 +330,9 @@ function getFilteredRequests() {
   return requests.filter(r => r.status === statusFilter);
 }
 
+
+// ── Request Actions ──────────────────────────
+
 function approveRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
@@ -322,6 +369,10 @@ function deleteRequest(id) {
   if (currentSection === 'dashboard') renderDashboard();
 }
 
+
+// ══════════════════════════════════════════════
+//  BUILDINGS GRID
+// ══════════════════════════════════════════════
 
 function renderBuildingsGrid() {
   const grid = document.getElementById('buildings-grid');
@@ -360,9 +411,12 @@ function getFilteredBuildings() {
 }
 
 
+// ── Building Actions ─────────────────────────
+
 function openBuildingModal(isEdit = false) {
   document.getElementById('modal-title').textContent = isEdit ? 'Edit Building' : 'Add Building';
   document.getElementById('building-modal').classList.add('open');
+  // Init picker after modal is visible so the map renders correctly
   setTimeout(() => initLocationPicker(), 80);
 }
 
@@ -371,7 +425,9 @@ function closeBuildingModal() {
   document.getElementById('building-form').reset();
   editingBuildingId = null;
   document.getElementById('modal-title').textContent = 'Add Building';
+  // Reset picker display
   resetLocationPickerDisplay();
+  // Destroy picker map so it re-initialises fresh next open
   if (locationPickerMap) {
     locationPickerMap.remove();
     locationPickerMap    = null;
@@ -383,9 +439,9 @@ function resetLocationPickerDisplay() {
   const display = document.getElementById('location-picker-display');
   const text    = document.getElementById('location-picker-text');
   const mapEl   = document.getElementById('location-picker-map');
-  if (display) display.classList.remove('selected');
-  if (text)    text.textContent = 'No location selected';
-  if (mapEl)   mapEl.classList.remove('has-location');
+  if (display) { display.classList.remove('selected'); }
+  if (text)    { text.textContent = 'No location selected'; }
+  if (mapEl)   { mapEl.classList.remove('has-location'); }
 }
 
 function setLocationPickerPin(lat, lng) {
@@ -399,21 +455,23 @@ function setLocationPickerPin(lat, lng) {
   if (mapEl)   mapEl.classList.add('has-location');
 }
 
-
 function initLocationPicker() {
-  if (locationPickerMap) return;
+  if (locationPickerMap) return; // already initialised
 
   locationPickerMap = L.map('location-picker-map', {
-    center: [8.3595, 124.8675],
-    zoom:   18,
+    center:     [8.3595, 124.8675],
+    zoom:       18,
     zoomControl: true,
     attributionControl: false,
   });
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, subdomains: 'abc'
-  }).addTo(locationPickerMap);
+  // OSM tile — dark filter in CSS handles the darkening
+  L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { maxZoom: 19, subdomains: 'abc' }
+  ).addTo(locationPickerMap);
 
+  // If editing, pre-place marker at existing coords
   const existingLat = parseFloat(document.getElementById('building-lat').value);
   const existingLng = parseFloat(document.getElementById('building-lng').value);
   if (!isNaN(existingLat) && !isNaN(existingLng)) {
@@ -422,6 +480,7 @@ function initLocationPicker() {
     setLocationPickerPin(existingLat, existingLng);
   }
 
+  // Click to place / move marker
   locationPickerMap.on('click', e => {
     placePickerMarker(e.latlng.lat, e.latlng.lng);
     setLocationPickerPin(e.latlng.lat, e.latlng.lng);
@@ -446,13 +505,14 @@ function placePickerMarker(lat, lng) {
   } else {
     locationPickerMarker = L.marker([lat, lng], { icon, draggable: true })
       .addTo(locationPickerMap);
+
+    // Allow dragging to fine-tune position
     locationPickerMarker.on('dragend', e => {
       const { lat, lng } = e.target.getLatLng();
       setLocationPickerPin(lat, lng);
     });
   }
 }
-
 
 function editBuilding(id) {
   const b = buildings.find(b => b.id === id);
@@ -476,12 +536,16 @@ function deleteBuilding(id) {
   if (adminMap) renderMapMarkers();
 }
 
+
+// ── Building Form Submit ─────────────────────
+
 function handleBuildingSubmit(e) {
   e.preventDefault();
   const lat = parseFloat(document.getElementById('building-lat').value);
   const lng = parseFloat(document.getElementById('building-lng').value);
 
   if (isNaN(lat) || isNaN(lng)) {
+    // Highlight the map as required
     const mapEl = document.getElementById('location-picker-map');
     mapEl.style.borderColor = '#ef4444';
     mapEl.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.2)';
@@ -494,15 +558,18 @@ function handleBuildingSubmit(e) {
 
   const data = {
     name:          document.getElementById('building-name').value.trim(),
-    lat, lng,
-    pollutionLevel: document.getElementById('pollution-level').value,
+    lat,
+    lng,
+    pollutionLevel:document.getElementById('pollution-level').value,
     description:   document.getElementById('building-description').value.trim(),
   };
 
   if (editingBuildingId !== null) {
+    // Update existing
     const idx = buildings.findIndex(b => b.id === editingBuildingId);
     if (idx !== -1) buildings[idx] = { ...buildings[idx], ...data };
   } else {
+    // Add new
     buildings.push({ id: Date.now(), ...data });
   }
 
@@ -512,6 +579,10 @@ function handleBuildingSubmit(e) {
   closeBuildingModal();
 }
 
+
+// ══════════════════════════════════════════════
+//  MAP
+// ══════════════════════════════════════════════
 
 function initManagerMap() {
   if (adminMap) return;
@@ -536,6 +607,7 @@ function initManagerMap() {
   adminCurrentTile = adminStandardLayer;
   adminCurrentTile.addTo(adminMap);
 
+  // Layer toggle control
   const LayerToggle = L.Control.extend({
     options: { position: 'bottomright' },
     onAdd() {
@@ -554,6 +626,12 @@ function initManagerMap() {
           ? adminSatelliteLayer : adminStandardLayer;
         adminCurrentTile.addTo(adminMap);
         btn.innerHTML = adminCurrentTile === adminSatelliteLayer ? '🗺️' : '🛰️';
+        const container = adminMap.getContainer();
+        if (adminCurrentTile === adminSatelliteLayer) {
+          container.classList.add('satellite-active');
+        } else {
+          container.classList.remove('satellite-active');
+        }
       });
       L.DomEvent.disableClickPropagation(div);
       return div;
@@ -573,7 +651,7 @@ function renderMapMarkers() {
   const list = mapFilter === 'all' ? buildings : buildings.filter(b => b.pollutionLevel === mapFilter);
 
   list.forEach(b => {
-    const color  = POLLUTION_COLORS[b.pollutionLevel] || '#6b7280';
+    const color = POLLUTION_COLORS[b.pollutionLevel] || '#6b7280';
     const marker = L.circleMarker([b.lat, b.lng], {
       radius: 14, fillColor: color, color: '#fff',
       weight: 2, opacity: 1, fillOpacity: 0.85,
@@ -592,6 +670,10 @@ function renderMapMarkers() {
   });
 }
 
+
+// ══════════════════════════════════════════════
+//  RECYCLE BIN
+// ══════════════════════════════════════════════
 
 function renderRecycleBin() {
   const tbody = document.getElementById('recycle-bin-tbody');
@@ -658,6 +740,10 @@ function emptyRecycleBin() {
 }
 
 
+// ══════════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════════
+
 function loadRequests() {
   try {
     const raw = localStorage.getItem('nbscDataRequests');
@@ -687,6 +773,11 @@ function notifyUser(request, status) {
   } catch (e) { /* silent */ }
 }
 
+
+// ══════════════════════════════════════════════
+//  AUTO-DETECT NEW REQUESTS
+// ══════════════════════════════════════════════
+
 function checkForNewRequests() {
   const flag = localStorage.getItem('managerShowRequests');
   const ts   = localStorage.getItem('managerShowRequestsTimestamp');
@@ -699,39 +790,53 @@ function checkForNewRequests() {
 }
 
 
+// ══════════════════════════════════════════════
+//  EVENT LISTENERS
+// ══════════════════════════════════════════════
+
 function setupEventListeners() {
+
+  // Status filter
   document.getElementById('status-filter').addEventListener('change', e => {
     statusFilter = e.target.value;
     renderRequestsTable();
   });
 
+  // Building pollution filter
   document.getElementById('pollution-filter').addEventListener('change', e => {
     pollutionFilter = e.target.value;
     renderBuildingsGrid();
   });
 
+  // Map filter
   document.getElementById('map-filter').addEventListener('change', e => {
     mapFilter = e.target.value;
     renderMapMarkers();
   });
 
+  // Building form submit
   document.getElementById('building-form').addEventListener('submit', handleBuildingSubmit);
 
+  // Close modal on backdrop click
   document.getElementById('building-modal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeBuildingModal();
   });
 
+  // Logout
   document.getElementById('logoutBtn').addEventListener('click', () => {
     if (!confirm('Are you sure you want to logout?')) return;
     localStorage.removeItem('nbsc_session');
     localStorage.removeItem('managerSession');
     sessionStorage.removeItem('managerSession');
     sessionStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
   });
 }
 
 
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -742,13 +847,17 @@ function formatDate(iso) {
 function escHtml(str) {
   if (str === undefined || str === null) return '';
   return String(str)
-    .replace(/&/g,  '&amp;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
-    .replace(/"/g,  '&quot;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-// Global exports for HTML onclick attributes
+
+// ══════════════════════════════════════════════
+//  GLOBAL EXPORTS (for HTML onclick)
+// ══════════════════════════════════════════════
+
 window.approveRequest           = approveRequest;
 window.denyRequest              = denyRequest;
 window.deleteRequest            = deleteRequest;
@@ -759,4 +868,4 @@ window.openBuildingModal        = openBuildingModal;
 window.closeBuildingModal       = closeBuildingModal;
 window.editBuilding             = editBuilding;
 window.deleteBuilding           = deleteBuilding;
-window.handleManagerLogout      = () => document.getElementById('logoutBtn').click();
+window.handleManagerLogout        = () => document.getElementById('logoutBtn').click();

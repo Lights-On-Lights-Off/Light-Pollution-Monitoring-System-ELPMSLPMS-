@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 :root {
-    --stroke: #060505;
+    --stroke: rgba(0,0,0,0.08);
     --radius: 10px; 
 }
 
@@ -30,7 +30,7 @@ html, body {
     font-size: 16px;
     height:100%;
     margin:0;
-    background:#131618;
+    background:#252324;
     color:#ffffff; 
 }
 /* ── NAVBAR ── */
@@ -245,7 +245,7 @@ html, body {
     grid-template-rows: auto 1fr auto;
     gap: 14px;
     height: calc(100vh - 72px);
-    padding: 5px 14px 14px 5px;
+    padding: 6px 14px 14px;
     box-sizing: border-box;
     overflow-y: auto; 
 }
@@ -627,4 +627,7 @@ input:focus, textarea:focus {
 .leaflet-control-zoom-out,
 .leaflet-control-attribution {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+.satellite-active .leaflet-layer {
+  filter: none;
 }

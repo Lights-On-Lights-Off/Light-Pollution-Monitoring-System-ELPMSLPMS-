@@ -6,7 +6,7 @@ function createWindow() {
     height: 600
   })
 
-  win.loadFile('index.html')
+  win.loadFile('./admin/admin.html')
 }
 
 app.whenReady().then(createWindow)

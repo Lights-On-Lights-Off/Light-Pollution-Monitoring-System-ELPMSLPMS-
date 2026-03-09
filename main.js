@@ -119,6 +119,15 @@ L.control.layers(
   { position: "bottomright" }
 ).addTo(map);
 
+map.on('baselayerchange', e => {
+  const container = map.getContainer();
+  if (e.name === 'Satellite View') {
+    container.classList.add('satellite-active');
+  } else {
+    container.classList.remove('satellite-active');
+  }
+});
+
 // ── Map Markers ──
 const lightMarkers = {};
 
@@ -238,6 +247,7 @@ function getLevelFromLux(lux) {
   // remaining 30% → high ... but only if lux is actually elevated
   return lux > 60 ? "high" : "moderate";
 }
+
 function getPollutionLabel(level) {
   const labels = { low: "Low", moderate: "Moderate", high: "High (Light Pollution)" };
   return labels[level] || level;
@@ -286,9 +296,6 @@ function addLightLogEntry(building) {
   }
 }
 
-// ── DOM References ──
-const logBody = document.getElementById("logBody");
-
 // ── Simulate Real-time Updates every 5 seconds ──
 setInterval(() => {
   const time = new Date().toLocaleTimeString();
@@ -305,7 +312,9 @@ setInterval(() => {
     if (lightTrendChart.data.datasets[index].data.length > 10) {
       lightTrendChart.data.datasets[index].data.shift();
     }
-lightMarkers[building.id].setStyle({
+
+    // Update marker color and popup
+    lightMarkers[building.id].setStyle({
       fillColor: POLLUTION_COLORS[building.pollutionLevel]
     });
     lightMarkers[building.id].setPopupContent(buildPopupHTML(building));
@@ -316,6 +325,9 @@ lightMarkers[building.id].setStyle({
   lightTrendChart.update();
   updateKPIsAndStatusChart();
 }, 5000);
+
+// ── DOM References ──
+const logBody = document.getElementById("logBody");
 
 // ── Session / Auth ──
 function getSession() {

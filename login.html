@@ -30,6 +30,7 @@
       overflow-y: auto;
     }
 
+    /* ── Animated Canvas Background ── */
     #bg-canvas {
       position: fixed;
       inset: 0;
@@ -38,6 +39,7 @@
       height: 100%;
     }
 
+    /* ── Noise grain overlay ── */
     body::after {
       content: '';
       position: fixed;
@@ -49,6 +51,7 @@
       z-index: 1;
     }
 
+    /* ── Page layout ── */
     .page {
       position: relative;
       z-index: 2;
@@ -59,6 +62,7 @@
       padding: 40px 24px;
     }
 
+    /* ── Card ── */
     .card {
       width: 100%;
       max-width: 420px;
@@ -77,6 +81,7 @@
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    /* ── Header ── */
     .card-header {
       text-align: center;
       margin-bottom: 32px;
@@ -106,6 +111,7 @@
       letter-spacing: 0.3px;
     }
 
+    /* ── Forms ── */
     .form { animation: fadeUp 0.5s 0.25s both; }
 
     @keyframes fadeUp {
@@ -153,6 +159,7 @@
       box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
     }
 
+    /* ── Buttons ── */
     .btn-primary {
       width: 100%;
       margin-top: 8px;
@@ -193,6 +200,7 @@
       transform: none;
     }
 
+    /* ── Alert ── */
     .alert {
       height: 3px;
       border-radius: 2px;
@@ -203,6 +211,7 @@
     .alert.error   { background: #ef4444; }
     .alert.success { background: #22c55e; }
 
+    /* ── Footer links ── */
     .form-footer {
       text-align: center;
       margin-top: 20px;
@@ -225,6 +234,7 @@
       margin: 8px 0;
     }
 
+    /* ── Spinner inside button ── */
     .spinner {
       display: inline-block;
       width: 14px; height: 14px;
@@ -237,6 +247,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── UX Feedback ─────────────────────────────────── */
     .input-group input { transition: border-color 0.18s, box-shadow 0.18s; }
     .input-group input:focus { border-color: #0d6efd; box-shadow: 0 0 0 3px rgba(13,110,253,0.18); outline: none; }
     .input-group input:hover:not(:focus) { border-color: rgba(255,255,255,0.2); }
@@ -247,7 +258,6 @@
     a { transition: color 0.15s; }
   </style>
 </head>
-
 <body>
 
   <canvas id="bg-canvas"></canvas>
@@ -263,7 +273,7 @@
 
       <div id="alert-box" class="alert"></div>
 
-      <!-- Login Form -->
+      <!-- ── Login Form ── -->
       <form class="form" id="login-form" autocomplete="off">
         <div class="form-group">
           <label for="login-email">Email Address</label>
@@ -281,7 +291,7 @@
         </div>
       </form>
 
-      <!-- Register Form -->
+      <!-- ── Register Form ── -->
       <form class="form" id="register-form" style="display:none;" autocomplete="off">
         <div class="form-group">
           <label for="reg-name">Full Name</label>
@@ -315,10 +325,12 @@
   </div>
 
   <script>
+    // Auto-switch to register form if redirected with #register
     if (window.location.hash === '#register') {
       switchForm('register');
     }
 
+    // ── Animated particle background ──
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     let W, H, particles = [];
@@ -358,6 +370,7 @@
 
     for (let i = 0; i < 120; i++) particles.push(new Particle());
 
+    // Soft radial glow at center
     function drawGlow() {
       const grd = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W * 0.55);
       grd.addColorStop(0,   'rgba(13,110,253,0.07)');
@@ -377,12 +390,14 @@
     }
     loop();
 
+    // ── Auth logic ──
     const DEFAULT_USERS = [
       { email: 'user@example.com',    password: 'user1234', name: 'Default User', org: 'NBSC', role: 'user'    },
       { email: 'manager@example.com', password: 'manager1', name: 'NBSC Manager', org: 'NBSC', role: 'manager' },
       { email: 'admin@example.com',   password: 'admin123', name: 'NBSC Admin',   org: 'NBSC', role: 'admin'   },
     ];
 
+    // Ensure default accounts always exist in localStorage
     (function seedDefaults() {
       const raw   = localStorage.getItem('nbsc_users');
       let users   = raw ? JSON.parse(raw) : [];
@@ -405,10 +420,7 @@
       localStorage.setItem('nbsc_users', JSON.stringify(users));
     }
 
-    function saveUsers(users) {
-      localStorage.setItem('nbsc_users', JSON.stringify(users));
-    }
-
+    // ── Form switching ──
     function switchForm(type) {
       const alertBox = document.getElementById('alert-box');
       alertBox.className = 'alert';
@@ -423,6 +435,7 @@
         document.getElementById('form-title').textContent = 'Welcome Back';
       }
     }
+
     function showAlert(type) {
       const box = document.getElementById('alert-box');
       box.className = `alert ${type}`;
@@ -439,6 +452,7 @@
       }
     }
 
+    // ── Login ──
     document.getElementById('login-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const email    = document.getElementById('login-email').value.trim();
@@ -453,9 +467,9 @@
         if (match) {
           localStorage.setItem('nbsc_session', JSON.stringify({ email: match.email, name: match.name, role: match.role || 'user' }));
           showAlert('success');
-          let dest = 'user.html';
-          if (match.role === 'manager') dest = 'manager.html';
-          if (match.role === 'admin')   dest = 'admin-app/admin.html';
+          let dest = 'user/user.html';
+          if (match.role === 'manager') dest = 'manager/manager.html';
+          if (match.role === 'admin')   dest = 'admin/admin.html';
           setTimeout(() => { window.location.href = dest; }, 1200);
         } else {
           showAlert('error');
@@ -470,6 +484,7 @@
       }, 800);
     });
 
+    // ── Register ──
     document.getElementById('register-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const name     = document.getElementById('reg-name').value.trim();
