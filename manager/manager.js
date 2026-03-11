@@ -66,7 +66,7 @@ const POLLUTION_COLORS = { low: '#22c55e', moderate: '#f59e0b', high: '#ef4444' 
 let requests        = [];
 let deletedRequests = [];
 
-let buildings = [
+const DEFAULT_BUILDINGS = [
   { id: 1, name: 'SWDC Building',    lat: 8.360309, lng: 124.867777, pollutionLevel: 'high',     description: 'Main administrative offices' },
   { id: 2, name: 'NBSC Library',     lat: 8.359264, lng: 124.867894, pollutionLevel: 'moderate', description: 'Main library and study center' },
   { id: 3, name: 'NBSC Clinic',      lat: 8.359158, lng: 124.868179, pollutionLevel: 'low',      description: 'Medical services and health center' },
@@ -75,6 +75,44 @@ let buildings = [
   { id: 6, name: 'Covered Court',    lat: 8.360122, lng: 124.868941, pollutionLevel: 'low',      description: 'Sports and events facility' },
   { id: 7, name: 'Cafeteria',        lat: 8.358900, lng: 124.868200, pollutionLevel: 'moderate', description: 'Student dining facility' },
 ];
+
+function loadBuildings() {
+  try {
+    const raw = localStorage.getItem('nbscBuildings');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      buildings = parsed.map(b => ({
+        id:            b.id,
+        name:          b.name,
+        lat:           Array.isArray(b.coordinates) ? b.coordinates[0] : b.lat,
+        lng:           Array.isArray(b.coordinates) ? b.coordinates[1] : b.lng,
+        pollutionLevel:b.pollutionLevel,
+        description:   b.description || '',
+        lux:           b.lux,
+      }));
+    } else {
+      buildings = DEFAULT_BUILDINGS.map(b => ({ ...b }));
+      persistBuildings();
+    }
+  } catch (e) {
+    buildings = DEFAULT_BUILDINGS.map(b => ({ ...b }));
+  }
+}
+
+function persistBuildings() {
+  const toSave = buildings.map(b => ({
+    id:            b.id,
+    name:          b.name,
+    coordinates:   [b.lat, b.lng],
+    pollutionLevel:b.pollutionLevel,
+    description:   b.description || '',
+    lux:           b.lux !== undefined ? b.lux : 50,
+    online:        true,
+  }));
+  localStorage.setItem('nbscBuildings', JSON.stringify(toSave));
+}
+
+let buildings = [];
 
 // State
 let currentSection  = 'dashboard';
@@ -101,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
   seedDefaultManager();
   checkManagerAuth();
   loadManagerProfile();
+  loadBuildings();
   loadRequests();
   updateQuickStats();
   renderDashboard();
@@ -507,6 +546,7 @@ function deleteBuilding(id) {
   if (!b) return;
   if (!confirm(`Delete ${b.name}? This cannot be undone.`)) return;
   buildings = buildings.filter(b => b.id !== id);
+  persistBuildings();
   updateQuickStats();
   renderBuildingsGrid();
   if (adminMap) renderMapMarkers();
@@ -548,6 +588,7 @@ function handleBuildingSubmit(e) {
     buildings.push({ id: Date.now(), ...data });
   }
 
+  persistBuildings();
   updateQuickStats();
   renderBuildingsGrid();
   if (adminMap) renderMapMarkers();
