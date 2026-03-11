@@ -17,7 +17,7 @@
   --low:       #22c55e;
   --moderate:  #f59e0b;
   --high:      #ef4444;
-  --sidebar-w: 230px;
+  --sidebar-w: 230px; /* used by both .sidebar width and .main left offset */
 }
 
 html, body {

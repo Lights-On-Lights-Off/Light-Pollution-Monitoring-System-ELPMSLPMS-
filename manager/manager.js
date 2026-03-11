@@ -1,4 +1,4 @@
-//  NBSC Admin Dashboard — manager.js
+// NBSC Manager Dashboard — manager.js
 
 (function () {
   const canvas = document.getElementById('bg-canvas');
@@ -57,9 +57,6 @@
 })();
 
 
-//  DATA
-
-
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 const POLLUTION_COLORS = { low: '#22c55e', moderate: '#f59e0b', high: '#ef4444' };
 
@@ -114,26 +111,21 @@ function persistBuildings() {
 
 let buildings = [];
 
-// State
 let currentSection  = 'dashboard';
 let statusFilter    = 'all';
 let pollutionFilter = 'all';
 let mapFilter       = 'all';
 let editingBuildingId = null;
 
-// Map
 let adminMap;
 let adminMapMarkers    = [];
 let adminSatelliteLayer;
 let adminStandardLayer;
 let adminCurrentTile;
 
-// Location picker (building modal)
 let locationPickerMap    = null;
 let locationPickerMarker = null;
 
-
-//  INIT
 
 document.addEventListener('DOMContentLoaded', () => {
   seedDefaultManager();
@@ -180,8 +172,6 @@ function checkManagerAuth() {
 }
 
 
-//  PROFILE
-
 function loadManagerProfile() {
   const raw = localStorage.getItem('nbsc_session');
   if (!raw) return;
@@ -195,8 +185,6 @@ function loadManagerProfile() {
 }
 
 
-//  NAVIGATION
-
 function initNavigation() {
   document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
     btn.addEventListener('click', () => navigateTo(btn.dataset.section));
@@ -204,17 +192,14 @@ function initNavigation() {
 }
 
 function navigateTo(id) {
-  // nav highlight
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navBtn = document.querySelector(`.nav-item[data-section="${id}"]`);
   if (navBtn) navBtn.classList.add('active');
 
-  // sections
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(id);
   if (target) target.classList.add('active');
 
-  // page title
   const titles = {
     'dashboard':  'Dashboard Overview',
     'requests':   'Data Requests Management',
@@ -224,7 +209,6 @@ function navigateTo(id) {
   };
   document.getElementById('page-title').textContent = titles[id] || 'Dashboard';
 
-  // render content
   switch (id) {
     case 'dashboard':   renderDashboard();      break;
     case 'requests':    renderRequestsTable();  break;
@@ -237,8 +221,6 @@ function navigateTo(id) {
 }
 
 
-//  STATS
-
 function updateQuickStats() {
   document.getElementById('pending-count').textContent       = requests.filter(r => r.status === 'pending').length;
   document.getElementById('approved-count').textContent      = requests.filter(r => r.status === 'approved').length;
@@ -246,8 +228,6 @@ function updateQuickStats() {
   document.getElementById('total-buildings-count').textContent = buildings.length;
 }
 
-
-//  DASHBOARD
 
 function renderDashboard() {
   renderDashboardRequests();
@@ -298,8 +278,6 @@ function renderDashboardBuildings() {
   `;
 }
 
-
-//  REQUESTS TABLE
 
 function renderRequestsTable() {
   const tbody  = document.getElementById('requests-tbody');
@@ -367,7 +345,7 @@ function logActivity(action, detail) {
       detail,
       timestamp: new Date().toISOString(),
     });
-    // Keep last 100 entries
+    // Cap the log at 100 entries so localStorage doesn't grow unbounded
     localStorage.setItem('nbscActivityLog', JSON.stringify(log.slice(0, 100)));
   } catch (e) { /* non-critical */ }
 }
@@ -413,8 +391,6 @@ function deleteRequest(id) {
 }
 
 
-//  BUILDINGS GRID
-
 function renderBuildingsGrid() {
   const grid = document.getElementById('buildings-grid');
   const list = getFilteredBuildings();
@@ -456,7 +432,7 @@ function getFilteredBuildings() {
 function openBuildingModal(isEdit = false) {
   document.getElementById('modal-title').textContent = isEdit ? 'Edit Building' : 'Add Building';
   document.getElementById('building-modal').classList.add('open');
-  // Init picker after modal is visible so the map renders correctly
+  // Delay map init until the modal is visible; Leaflet needs the container to have dimensions
   setTimeout(() => initLocationPicker(), 80);
 }
 
@@ -465,9 +441,7 @@ function closeBuildingModal() {
   document.getElementById('building-form').reset();
   editingBuildingId = null;
   document.getElementById('modal-title').textContent = 'Add Building';
-  // Reset picker display
   resetLocationPickerDisplay();
-  // Destroy picker map so it re-initialises fresh next open
   if (locationPickerMap) {
     locationPickerMap.remove();
     locationPickerMap    = null;
@@ -496,7 +470,7 @@ function setLocationPickerPin(lat, lng) {
 }
 
 function initLocationPicker() {
-  if (locationPickerMap) return; // already initialised
+  if (locationPickerMap) return; // map already exists from a previous open; skip re-init
 
   locationPickerMap = L.map('location-picker-map', {
     center:     [8.3595, 124.8675],
@@ -546,7 +520,7 @@ function placePickerMarker(lat, lng) {
     locationPickerMarker = L.marker([lat, lng], { icon, draggable: true })
       .addTo(locationPickerMap);
 
-    // Allow dragging to fine-tune position
+    // Dragging the pin updates the stored coordinates in real time
     locationPickerMarker.on('dragend', e => {
       const { lat, lng } = e.target.getLatLng();
       setLocationPickerPin(lat, lng);
@@ -586,7 +560,7 @@ function handleBuildingSubmit(e) {
   const lng = parseFloat(document.getElementById('building-lng').value);
 
   if (isNaN(lat) || isNaN(lng)) {
-    // Highlight the map as required
+    // Flash the map picker red to indicate a pin location is required before saving
     const mapEl = document.getElementById('location-picker-map');
     mapEl.style.borderColor = '#ef4444';
     mapEl.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.2)';
@@ -606,13 +580,11 @@ function handleBuildingSubmit(e) {
   };
 
   if (editingBuildingId !== null) {
-    // Update existing
-    const idx = buildings.findIndex(b => b.id === editingBuildingId);
+      const idx = buildings.findIndex(b => b.id === editingBuildingId);
     if (idx !== -1) buildings[idx] = { ...buildings[idx], ...data };
     logActivity('edited_building', `Edited building "${data.name}"`);
   } else {
-    // Add new
-    buildings.push({ id: Date.now(), ...data });
+      buildings.push({ id: Date.now(), ...data });
     logActivity('added_building', `Added building "${data.name}"`);
   }
 
@@ -623,8 +595,6 @@ function handleBuildingSubmit(e) {
   closeBuildingModal();
 }
 
-
-//  MAP
 
 function initManagerMap() {
   if (adminMap) return;
@@ -649,7 +619,6 @@ function initManagerMap() {
   adminCurrentTile = adminStandardLayer;
   adminCurrentTile.addTo(adminMap);
 
-  // Layer toggle control
   const LayerToggle = L.Control.extend({
     options: { position: 'bottomright' },
     onAdd() {
@@ -669,6 +638,7 @@ function initManagerMap() {
         adminCurrentTile.addTo(adminMap);
         btn.innerHTML = adminCurrentTile === adminSatelliteLayer ? '🗺️' : '🛰️';
         const container = adminMap.getContainer();
+        // Removes the dark CSS filter on the map container when satellite view is active
         if (adminCurrentTile === adminSatelliteLayer) {
           container.classList.add('satellite-active');
         } else {
@@ -712,8 +682,6 @@ function renderMapMarkers() {
   });
 }
 
-
-//  RECYCLE BIN
 
 function renderRecycleBin() {
   const tbody = document.getElementById('recycle-bin-tbody');
@@ -780,8 +748,6 @@ function emptyRecycleBin() {
 }
 
 
-//  STORAGE
-
 function loadRequests() {
   try {
     const raw = localStorage.getItem('nbscDataRequests');
@@ -812,8 +778,8 @@ function notifyUser(request, status) {
 }
 
 
-//  AUTO-DETECT NEW REQUESTS
 
+// Checks if the user dashboard flagged a new request submission; auto-navigates to requests tab if recent
 function checkForNewRequests() {
   const flag = localStorage.getItem('managerShowRequests');
   const ts   = localStorage.getItem('managerShowRequestsTimestamp');
@@ -826,37 +792,29 @@ function checkForNewRequests() {
 }
 
 
-//  EVENT LISTENERS
-
 function setupEventListeners() {
 
-  // Status filter
   document.getElementById('status-filter').addEventListener('change', e => {
     statusFilter = e.target.value;
     renderRequestsTable();
   });
 
-  // Building pollution filter
   document.getElementById('pollution-filter').addEventListener('change', e => {
     pollutionFilter = e.target.value;
     renderBuildingsGrid();
   });
 
-  // Map filter
   document.getElementById('map-filter').addEventListener('change', e => {
     mapFilter = e.target.value;
     renderMapMarkers();
   });
 
-  // Building form submit
   document.getElementById('building-form').addEventListener('submit', handleBuildingSubmit);
 
-  // Close modal on backdrop click
   document.getElementById('building-modal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeBuildingModal();
   });
 
-  // Logout
   document.getElementById('logoutBtn').addEventListener('click', () => {
     if (!confirm('Are you sure you want to logout?')) return;
     localStorage.removeItem('nbsc_session');
@@ -867,8 +825,6 @@ function setupEventListeners() {
   });
 }
 
-
-//  HELPERS
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -886,7 +842,6 @@ function escHtml(str) {
 }
 
 
-//  GLOBAL EXPORTS (for HTML onclick)
 
 window.approveRequest           = approveRequest;
 window.denyRequest              = denyRequest;

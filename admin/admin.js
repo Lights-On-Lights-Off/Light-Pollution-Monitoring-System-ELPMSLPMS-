@@ -1,6 +1,5 @@
-//  NBSC Admin App — admin.js
-//  All localStorage paths relative to the
-//  shared system (same keys as manager/user)
+// NBSC Admin App — admin.js
+// Reads from the same localStorage keys as manager and user (nbsc_users, nbscDataRequests, nbscActivityLog)
 
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
@@ -67,8 +66,6 @@ function loadAdminProfile() {
 }
 
 
-//  NAVIGATION
-
 const PAGE_LABELS = {
   dashboard: { title: 'Dashboard',        sub: 'System overview' },
   users:     { title: 'Users Management', sub: 'Manage accounts and roles' },
@@ -90,8 +87,6 @@ function navigate(btn) {
   if (section === 'settings') renderStorageUsage();
 }
 
-
-//  DATA HELPERS
 
 function getUsers() {
   try { return JSON.parse(localStorage.getItem('nbsc_users')) || []; }
@@ -115,7 +110,7 @@ function getNotifications() {
 function getActivityLog() {
   const entries = [];
 
-  // Source 1: approved/denied requests
+  // Source 1: derive events from reviewed requests (approved/denied)
   getRequests()
     .filter(r => r.status === 'approved' || r.status === 'denied')
     .forEach(r => entries.push({
@@ -126,7 +121,7 @@ function getActivityLog() {
       timestamp: r.reviewedAt || r.submittedDate,
     }));
 
-  // Source 2: building + other actions logged by manager
+  // Source 2: explicit log entries written by manager.js logActivity()
   try {
     const log = JSON.parse(localStorage.getItem('nbscActivityLog') || '[]');
     log.forEach(e => entries.push({ _type: 'log', ...e }));
@@ -135,8 +130,6 @@ function getActivityLog() {
   return entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
 
-
-//  STATS
 
 function updateStats() {
   const users    = getUsers().filter(u => u.role !== 'admin');
@@ -153,8 +146,6 @@ function updateStats() {
   document.getElementById('stat-pending').textContent        = pending;
 }
 
-
-//  DASHBOARD
 
 function renderDashboard() {
   renderRecentUsers();
@@ -225,8 +216,6 @@ function renderActivityFeed() {
   }).join('');
 }
 
-
-//  USERS MANAGEMENT
 
 function renderUsersTable() {
   const filter = document.getElementById('role-filter').value;
@@ -331,7 +320,7 @@ function confirmDeleteUser(email) {
 function doDeleteUser() {
   if (!pendingDeleteEmail) return;
 
-  // Force logout if the deleted account is currently logged in
+  // If the deleted account is the one currently logged in, end their session immediately
   try {
     const session = JSON.parse(localStorage.getItem('nbsc_session'));
     if (session && session.email === pendingDeleteEmail) {
@@ -349,13 +338,11 @@ function doDeleteUser() {
 }
 
 
-//  SYSTEM SETTINGS
-
 function renderStorageUsage() {
   let total = 0;
   for (const key in localStorage) {
     if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
-      total += (localStorage[key].length + key.length) * 2; // UTF-16 bytes
+      total += (localStorage[key].length + key.length) * 2; // each JS character is 2 bytes in UTF-16
     }
   }
   const kb      = (total / 1024).toFixed(1);
@@ -441,8 +428,6 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 });
 
 
-//  UTILS
-
 function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -519,8 +504,6 @@ function submitAddUser() {
   renderUsersTable();
 }
 
-
-//  INIT
 
 loadAdminProfile();
 updateStats();

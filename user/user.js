@@ -82,20 +82,18 @@ class UserDashboard {
     this.initMapTab(); // init map immediately since it's the default tab
   }
 
-  // ── Auth ──
   checkAuth() {
     const raw = localStorage.getItem('nbsc_session');
     if (!raw) { window.location.href = '../index.html'; return; }
 
     const session = JSON.parse(raw);
 
-    // Role guard — only users allowed here
+    // Role guard: only accounts with role 'user' can access this page
     if (session.role !== 'user') {
       window.location.href = '../index.html';
       return;
     }
 
-    // Account-existence guard
     const users = JSON.parse(localStorage.getItem('nbsc_users') || '[]');
     const still = users.find(u => u.email === session.email);
     if (!still) {
@@ -106,7 +104,7 @@ class UserDashboard {
 
     this.currentUser = session;
 
-    // Poll every 5s — redirect if session removed, role changed, or account deleted
+    // Poll every 5s: redirect if the session was removed, the role was changed, or the account was deleted by an admin
     setInterval(() => {
       const s = localStorage.getItem('nbsc_session');
       if (!s) { window.location.href = '../index.html'; return; }
@@ -120,7 +118,6 @@ class UserDashboard {
     }, 5000);
   }
 
-  // ── Nav UI ──
   updateNavUI() {
     if (!this.currentUser) return;
     const name  = this.currentUser.name  || this.currentUser.email.split('@')[0];
@@ -134,7 +131,6 @@ class UserDashboard {
     document.getElementById('dropdownEmail').textContent  = email;
   }
 
-  // ── Tabs ──
   initTabs() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -156,7 +152,6 @@ class UserDashboard {
     if (name === 'map' && !this.map) this.initMapTab();
   }
 
-  // ── Load user data ──
   loadUserData() {
     this.updateNavUI();
     this.prefillForm();
@@ -171,7 +166,6 @@ class UserDashboard {
     if (emailEl && this.currentUser.email) emailEl.value = this.currentUser.email;
   }
 
-  // ── Requests ──
   loadRequests() {
     const all = JSON.parse(localStorage.getItem('nbscDataRequests') || '[]');
     this.requests = all.filter(r => r.email === this.currentUser.email);
@@ -230,7 +224,6 @@ class UserDashboard {
     const r = this.requests.find(req => req.id === requestId);
     if (!r || r.status !== 'approved') return;
 
-    // Find the matching building
     const locationLabel = this.formatLocation(r.location);
     const building = this.campusBuildings.find(b =>
       b.name.toLowerCase() === locationLabel.toLowerCase() ||
@@ -243,14 +236,13 @@ class UserDashboard {
       )
     );
 
-    // Build CSV rows
     const now     = new Date();
     const rows    = [];
     const headers = ['Timestamp', 'Building', 'Location (Lat)', 'Location (Lng)', 'Lux Reading', 'Pollution Level', 'Status', 'Data Type'];
     rows.push(headers.join(','));
 
     if (building) {
-      // Generate simulated historical readings for the requested date range
+      // Generates simulated hourly readings across the requested date range (max 168 rows = 7 days)
       const start = r.startDate ? new Date(r.startDate) : new Date(now - 7 * 86400000);
       const end   = r.endDate   ? new Date(r.endDate)   : now;
       const diffMs = end - start;
@@ -275,7 +267,7 @@ class UserDashboard {
         ].join(','));
       }
     } else {
-      // Fallback: single summary row with request info only
+      // Building not found in the campus list; write a single placeholder row instead
       rows.push([
         now.toISOString(),
         `"${r.location || 'Unknown'}"`,
@@ -284,7 +276,6 @@ class UserDashboard {
       ].join(','));
     }
 
-    // Metadata header block
     const meta = [
       `# NBSC Light Pollution Monitoring System`,
       `# Request ID: ${r.id}`,
@@ -348,7 +339,6 @@ class UserDashboard {
     setTimeout(() => this.switchTab('requests'), 1000);
   }
 
-  // ── Notifications ──
   loadNotifications() {
     const all = JSON.parse(localStorage.getItem('userNotifications') || '[]');
     this.notifications = all.filter(n => n.email === this.currentUser.email);
@@ -374,7 +364,6 @@ class UserDashboard {
     `).join('');
   }
 
-  // ── Map ──
   initMapTab() {
     const el = document.getElementById('user-campus-map');
     if (!el || this.map) return;
@@ -399,6 +388,7 @@ class UserDashboard {
 
     L.control.layers({ 'Colored Map': colored, 'Satellite View': satellite }, null, { position: 'bottomright' }).addTo(this.map);
 
+    // Removes the dark CSS filter when satellite view is active so imagery shows in true color
     this.map.on('baselayerchange', e => {
       const container = this.map.getContainer();
       if (e.name === 'Satellite View') {
@@ -471,25 +461,20 @@ class UserDashboard {
     });
   }
 
-  // ── Event Bindings ──
   bindEvents() {
-    // Nav dropdown
     const pill    = document.getElementById('userPillToggle');
     const dropdown = document.getElementById('userDropdown');
     pill?.addEventListener('click', e => { e.stopPropagation(); dropdown?.classList.toggle('open'); });
     document.addEventListener('click', () => dropdown?.classList.remove('open'));
 
-    // Logout
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
       localStorage.removeItem('nbsc_session');
       window.location.href = '../index.html';
     });
 
-    // Request form
     document.getElementById('data-request-form')?.addEventListener('submit', e => this.submitRequest(e));
   }
 
-  // ── Helpers ──
   formatLocation(loc) {
     const map = {
       'NBSC LIBRARY': 'NBSC Library', 'NBSC CLINIC': 'NBSC Clinic',
