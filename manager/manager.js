@@ -264,12 +264,12 @@ function renderDashboardRequests() {
   el.innerHTML = recent.map(r => `
     <div class="mini-item">
       <div class="mini-item-left">
-        <span class="mini-item-name">${escHtml(r.name)}</span>
+        <span class="mini-item-name">${escHtml(r.userName)}</span>
         <span class="mini-item-email">${escHtml(r.email)}</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span class="badge ${r.status}">${cap(r.status)}</span>
-        <span style="font-size:0.75rem;color:var(--muted);">${r.date}</span>
+        <span style="font-size:0.75rem;color:var(--muted);">${r.submittedDate}</span>
       </div>
     </div>
   `).join('');
@@ -316,11 +316,11 @@ function renderRequestsTable() {
   tbody.innerHTML = filtered.map(r => `
     <tr>
       <td><span style="font-family:monospace;font-size:0.82rem;color:var(--accent);">${escHtml(r.id)}</span></td>
-      <td><strong>${escHtml(r.name)}</strong></td>
+      <td><strong>${escHtml(r.userName)}</strong></td>
       <td style="color:var(--muted);">${escHtml(r.email)}</td>
       <td>${escHtml(r.location || '—')}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(r.purpose || '—')}</td>
-      <td style="color:var(--muted);white-space:nowrap;">${escHtml(r.date)}</td>
+      <td style="color:var(--muted);white-space:nowrap;">${escHtml(r.submittedDate)}</td>
       <td><span class="badge ${r.status}">${cap(r.status)}</span></td>
       <td>
         <div class="td-actions">
@@ -379,7 +379,7 @@ function approveRequest(id) {
   r.reviewedAt = new Date().toISOString();
   r.reviewedBy = getSessionName();
   saveRequests();
-  logActivity('approved_request', `Approved request #${r.id} from ${r.name || r.email || '—'}`);
+  logActivity('approved_request', `Approved request #${r.id} from ${r.userName || r.email || '—'}`);
   notifyUser(r, 'approved');
   updateQuickStats();
   renderRequestsTable();
@@ -393,7 +393,7 @@ function denyRequest(id) {
   r.reviewedAt = new Date().toISOString();
   r.reviewedBy = getSessionName();
   saveRequests();
-  logActivity('denied_request', `Denied request #${r.id} from ${r.name || r.email || '—'}`);
+  logActivity('denied_request', `Denied request #${r.id} from ${r.userName || r.email || '—'}`);
   notifyUser(r, 'denied');
   updateQuickStats();
   renderRequestsTable();
@@ -403,7 +403,7 @@ function denyRequest(id) {
 function deleteRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
-  if (!confirm(`Move ${r.name}'s request to the recycle bin?`)) return;
+  if (!confirm(`Move ${r.userName}'s request to the recycle bin?`)) return;
   deletedRequests.push({ ...r, deletedOn: new Date().toISOString() });
   requests = requests.filter(r => r.id !== id);
   saveRequests();
@@ -732,9 +732,9 @@ function renderRecycleBin() {
   tbody.innerHTML = deletedRequests.map(r => `
     <tr>
       <td><span style="font-family:monospace;font-size:0.82rem;color:var(--accent);">${escHtml(r.id)}</span></td>
-      <td><strong>${escHtml(r.name)}</strong></td>
+      <td><strong>${escHtml(r.userName)}</strong></td>
       <td style="color:var(--muted);">${escHtml(r.email)}</td>
-      <td style="color:var(--muted);">${escHtml(r.date)}</td>
+      <td style="color:var(--muted);">${escHtml(r.submittedDate)}</td>
       <td><span class="badge ${r.status}">${cap(r.status)}</span></td>
       <td style="color:var(--muted);white-space:nowrap;">${formatDate(r.deletedOn)}</td>
       <td>
@@ -767,7 +767,7 @@ function restoreRequest(id) {
 function permanentlyDeleteRequest(id) {
   const r = deletedRequests.find(r => r.id === id);
   if (!r) return;
-  if (!confirm(`Permanently delete ${r.name}'s request? This cannot be undone.`)) return;
+  if (!confirm(`Permanently delete ${r.userName}'s request? This cannot be undone.`)) return;
   deletedRequests = deletedRequests.filter(r => r.id !== id);
   renderRecycleBin();
 }
