@@ -351,12 +351,35 @@ function getFilteredRequests() {
 
 
 
+function getSessionName() {
+  try {
+    const s = JSON.parse(localStorage.getItem('nbsc_session'));
+    return (s && s.name) ? s.name : 'Manager';
+  } catch (e) { return 'Manager'; }
+}
+
+function logActivity(action, detail) {
+  try {
+    const log = JSON.parse(localStorage.getItem('nbscActivityLog') || '[]');
+    log.unshift({
+      actor:     getSessionName(),
+      action,
+      detail,
+      timestamp: new Date().toISOString(),
+    });
+    // Keep last 100 entries
+    localStorage.setItem('nbscActivityLog', JSON.stringify(log.slice(0, 100)));
+  } catch (e) { /* non-critical */ }
+}
+
 function approveRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
-  r.status       = 'approved';
+  r.status     = 'approved';
   r.reviewedAt = new Date().toISOString();
+  r.reviewedBy = getSessionName();
   saveRequests();
+  logActivity('approved_request', `Approved request #${r.id} from ${r.name || r.email || '—'}`);
   notifyUser(r, 'approved');
   updateQuickStats();
   renderRequestsTable();
@@ -366,9 +389,11 @@ function approveRequest(id) {
 function denyRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
-  r.status       = 'denied';
+  r.status     = 'denied';
   r.reviewedAt = new Date().toISOString();
+  r.reviewedBy = getSessionName();
   saveRequests();
+  logActivity('denied_request', `Denied request #${r.id} from ${r.name || r.email || '—'}`);
   notifyUser(r, 'denied');
   updateQuickStats();
   renderRequestsTable();
@@ -547,6 +572,7 @@ function deleteBuilding(id) {
   if (!confirm(`Delete ${b.name}? This cannot be undone.`)) return;
   buildings = buildings.filter(b => b.id !== id);
   persistBuildings();
+  logActivity('deleted_building', `Deleted building "${b.name}"`);
   updateQuickStats();
   renderBuildingsGrid();
   if (adminMap) renderMapMarkers();
@@ -583,9 +609,11 @@ function handleBuildingSubmit(e) {
     // Update existing
     const idx = buildings.findIndex(b => b.id === editingBuildingId);
     if (idx !== -1) buildings[idx] = { ...buildings[idx], ...data };
+    logActivity('edited_building', `Edited building "${data.name}"`);
   } else {
     // Add new
     buildings.push({ id: Date.now(), ...data });
+    logActivity('added_building', `Added building "${data.name}"`);
   }
 
   persistBuildings();
