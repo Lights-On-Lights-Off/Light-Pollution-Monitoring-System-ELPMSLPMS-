@@ -122,8 +122,8 @@ function getActivityLog() {
       _type:     'request',
       actor:     r.reviewedBy || 'A manager',
       action:    r.status === 'approved' ? 'approved_request' : 'denied_request',
-      detail:    `Request #${r.id} from ${r.name || r.email || '—'}`,
-      timestamp: r.reviewedAt || r.date,
+      detail:    `Request #${r.id} from ${r.userName || r.email || '—'}`,
+      timestamp: r.reviewedAt || r.submittedDate,
     }));
 
   // Source 2: building + other actions logged by manager
