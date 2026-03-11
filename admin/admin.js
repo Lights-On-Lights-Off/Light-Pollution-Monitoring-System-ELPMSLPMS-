@@ -280,19 +280,37 @@ let pendingDeleteEmail = null;
 function confirmDeleteUser(email) {
   const users = getUsers();
   const user  = users.find(u => u.email === email);
-  if (!user) return;
+  if (!user) {
+    document.getElementById('confirm-title').textContent  = 'Error';
+    document.getElementById('confirm-message').innerHTML  = 'Account does not exist.';
+    document.getElementById('confirm-ok-btn').className   = 'btn btn-ghost';
+    document.getElementById('confirm-ok-btn').textContent = 'Close';
+    pendingConfirmAction = null;
+    document.getElementById('confirm-modal').classList.add('open');
+    return;
+  }
 
   pendingDeleteEmail = email;
   document.getElementById('confirm-title').textContent   = 'Delete Account';
   document.getElementById('confirm-message').innerHTML   =
     `Are you sure you want to delete the account for <strong>${escHtml(user.name || user.email)}</strong>? This cannot be undone.`;
   document.getElementById('confirm-ok-btn').className    = 'btn btn-danger';
+  document.getElementById('confirm-ok-btn').textContent  = 'Confirm';
   document.getElementById('confirm-modal').classList.add('open');
   pendingConfirmAction = doDeleteUser;
 }
 
 function doDeleteUser() {
   if (!pendingDeleteEmail) return;
+
+  // Force logout if the deleted account is currently logged in
+  try {
+    const session = JSON.parse(localStorage.getItem('nbsc_session'));
+    if (session && session.email === pendingDeleteEmail) {
+      localStorage.removeItem('nbsc_session');
+    }
+  } catch (e) { /* ignore */ }
+
   let users = getUsers();
   users = users.filter(u => u.email !== pendingDeleteEmail);
   saveUsers(users);
@@ -377,6 +395,8 @@ function confirmAction() {
 
 function closeConfirmModal() {
   document.getElementById('confirm-modal').classList.remove('open');
+  document.getElementById('confirm-ok-btn').textContent = 'Confirm';
+  document.getElementById('confirm-ok-btn').className   = 'btn btn-danger';
   pendingConfirmAction = null;
   pendingDeleteEmail   = null;
 }
