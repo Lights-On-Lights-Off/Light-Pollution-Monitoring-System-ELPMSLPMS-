@@ -11,14 +11,17 @@ VALUES
     1
   );
 
+-- NOTE: target_id = 7 assumes this runs immediately after the seed with no other building inserts.
+--       In production, use LAST_INSERT_ID() instead.
 INSERT INTO activity_log
-  (actor_id, action, target_type, target_id, meta)
+  (actor_id, action, target_type, target_id, detail, meta)
 VALUES
   (
     2,
-    'building_added',
+    'added_building',
     'building',
-    7,
+    LAST_INSERT_ID(),
+    'Added building "Engineering Building"',
     '{"code": "B07", "name": "Engineering Building", "pollution_level": "moderate"}'
   );
 

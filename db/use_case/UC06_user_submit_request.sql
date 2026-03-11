@@ -1,11 +1,13 @@
 INSERT INTO data_requests
-  (request_code, user_id, building_id, data_type, purpose, additional_notes,
-   start_date, end_date, status)
+  (request_code, user_id, user_name, building_id, location, data_type, purpose,
+   additional_notes, start_date, end_date, status)
 VALUES
   (
     CONCAT('REQ-', UNIX_TIMESTAMP(), '-', FLOOR(RAND() * 1000)),
     1,
+    (SELECT name FROM users WHERE id = 1),
     6,
+    'ICS Laboratory',
     'Light Intensity',
     'Studying the effect of artificial lighting on student concentration in the ICS lab.',
     'Hourly averages preferred. Night readings (8PM–6AM) are most important.',

@@ -7,13 +7,14 @@ WHERE
   AND role != 'admin';
 
 INSERT INTO activity_log
-  (actor_id, action, target_type, target_id, meta)
+  (actor_id, action, target_type, target_id, detail, meta)
 VALUES
   (
     3,
     'role_changed',
     'user',
     1,
+    'Changed role of user@example.com from user to manager',
     '{"old_role": "user", "new_role": "manager", "email": "user@example.com"}'
   );
 

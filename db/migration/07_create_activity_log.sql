@@ -2,14 +2,14 @@ CREATE TABLE activity_log (
   id           INT UNSIGNED NOT NULL AUTO_INCREMENT,
   actor_id     INT UNSIGNED     NULL DEFAULT NULL     ,
   action       ENUM(
-                 'approved',
-                 'denied',
+                 'approved_request',
+                 'denied_request',
                  'deleted',
                  'restored',
                  'role_changed',
-                 'building_added',
-                 'building_edited',
-                 'building_deleted',
+                 'added_building',
+                 'edited_building',
+                 'deleted_building',
                  'user_deleted'
                )            NOT NULL,
   target_type  ENUM(
@@ -17,8 +17,9 @@ CREATE TABLE activity_log (
                  'building',
                  'user'
                )            NOT NULL                 ,
-  target_id    INT UNSIGNED NOT NULL                 ,
-  meta         JSON             NULL DEFAULT NULL    ,
+  target_id    INT UNSIGNED     NULL DEFAULT NULL     ,
+  detail       TEXT             NULL DEFAULT NULL     ,
+  meta         JSON             NULL DEFAULT NULL     ,
   created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (id),
