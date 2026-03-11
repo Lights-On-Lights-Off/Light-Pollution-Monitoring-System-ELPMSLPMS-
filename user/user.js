@@ -86,7 +86,38 @@ class UserDashboard {
   checkAuth() {
     const raw = localStorage.getItem('nbsc_session');
     if (!raw) { window.location.href = '../index.html'; return; }
-    this.currentUser = JSON.parse(raw);
+
+    const session = JSON.parse(raw);
+
+    // Role guard — only users allowed here
+    if (session.role !== 'user') {
+      window.location.href = '../index.html';
+      return;
+    }
+
+    // Account-existence guard
+    const users = JSON.parse(localStorage.getItem('nbsc_users') || '[]');
+    const still = users.find(u => u.email === session.email);
+    if (!still) {
+      localStorage.removeItem('nbsc_session');
+      window.location.href = '../index.html';
+      return;
+    }
+
+    this.currentUser = session;
+
+    // Poll every 5s — redirect if session removed, role changed, or account deleted
+    setInterval(() => {
+      const s = localStorage.getItem('nbsc_session');
+      if (!s) { window.location.href = '../index.html'; return; }
+      const parsed = JSON.parse(s);
+      if (parsed.role !== 'user') { window.location.href = '../index.html'; return; }
+      const all = JSON.parse(localStorage.getItem('nbsc_users') || '[]');
+      if (!all.find(u => u.email === parsed.email)) {
+        localStorage.removeItem('nbsc_session');
+        window.location.href = '../index.html';
+      }
+    }, 5000);
   }
 
   // ── Nav UI ──
