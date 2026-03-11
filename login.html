@@ -256,6 +256,23 @@
     .btn-primary:active { transform: scale(0.97); }
     .card { transition: box-shadow 0.2s; }
     a { transition: color 0.15s; }
+
+    /* Mobile Responsive */
+    @media (max-width: 480px) {
+      .page { padding: 20px 14px; align-items: flex-start; }
+      .card { padding: 28px 20px; border-radius: 12px; }
+      .card-header h1 { font-size: 1.6rem; }
+      .card-header p { font-size: 0.88rem; }
+      input { font-size: 0.95rem; padding: 10px 12px; }
+      .btn-primary { padding: 11px; font-size: 0.95rem; }
+      label { font-size: 0.82rem; }
+      .form-footer { font-size: 0.85rem; }
+    }
+    @media (max-width: 360px) {
+      .page { padding: 14px 10px; }
+      .card { padding: 22px 16px; }
+      .card-header h1 { font-size: 1.4rem; }
+    }
   </style>
 </head>
 <body>
