@@ -113,10 +113,26 @@ function getNotifications() {
 }
 
 function getActivityLog() {
-  // Manager activity is derived from approved/denied requests
-  return getRequests()
+  const entries = [];
+
+  // Source 1: approved/denied requests
+  getRequests()
     .filter(r => r.status === 'approved' || r.status === 'denied')
-    .sort((a, b) => new Date(b.reviewedAt || b.date) - new Date(a.reviewedAt || a.date));
+    .forEach(r => entries.push({
+      _type:     'request',
+      actor:     r.reviewedBy || 'A manager',
+      action:    r.status === 'approved' ? 'approved_request' : 'denied_request',
+      detail:    `Request #${r.id} from ${r.name || r.email || '—'}`,
+      timestamp: r.reviewedAt || r.date,
+    }));
+
+  // Source 2: building + other actions logged by manager
+  try {
+    const log = JSON.parse(localStorage.getItem('nbscActivityLog') || '[]');
+    log.forEach(e => entries.push({ _type: 'log', ...e }));
+  } catch (e) { /* ignore */ }
+
+  return entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
 
 
@@ -177,20 +193,32 @@ function renderActivityFeed() {
     return;
   }
 
-  feed.innerHTML = activities.map(r => {
-    const managerName = r.reviewedBy || 'A manager';
-    const statusClass = r.status;
-    const statusWord  = cap(r.status);
-    const time        = r.reviewedAt ? formatTime(r.reviewedAt) : formatTime(r.date);
+  feed.innerHTML = activities.map(e => {
+    const dotClass = {
+      approved_request: 'approved',
+      denied_request:   'denied',
+      added_building:   'info',
+      edited_building:  'info',
+      deleted_building: 'denied',
+    }[e.action] || 'info';
+
+    const actionLabel = {
+      approved_request: 'approved',
+      denied_request:   'denied',
+      added_building:   'added building',
+      edited_building:  'edited building',
+      deleted_building: 'deleted building',
+    }[e.action] || e.action;
+
     return `
       <div class="activity-item">
-        <div class="activity-dot ${statusClass}"></div>
+        <div class="activity-dot ${dotClass}"></div>
         <div>
           <div class="activity-text">
-            <strong>${escHtml(managerName)}</strong> ${statusWord.toLowerCase()} request
-            <strong>#${escHtml(r.id)}</strong> from <strong>${escHtml(r.name || r.email || '—')}</strong>
+            <strong>${escHtml(e.actor)}</strong> ${escHtml(actionLabel)} —
+            ${escHtml(e.detail)}
           </div>
-          <div class="activity-time">${time}</div>
+          <div class="activity-time">${formatTime(e.timestamp)}</div>
         </div>
       </div>
     `;
