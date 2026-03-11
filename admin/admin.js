@@ -387,6 +387,7 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     if (e.target === overlay) {
       closeRoleModal();
       closeConfirmModal();
+      closeAddUserModal();
     }
   });
 });
@@ -409,6 +410,65 @@ function formatTime(dateStr) {
   if (isNaN(d)) return dateStr;
   return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
     + ' ' + d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+}
+
+
+function openAddUserModal() {
+  document.getElementById('add-user-name').value     = '';
+  document.getElementById('add-user-email').value    = '';
+  document.getElementById('add-user-password').value = '';
+  document.getElementById('add-user-role').value     = 'user';
+  document.getElementById('add-user-error').style.display = 'none';
+  document.getElementById('add-user-error').textContent   = '';
+  document.getElementById('add-user-modal').classList.add('open');
+}
+
+function closeAddUserModal() {
+  document.getElementById('add-user-modal').classList.remove('open');
+}
+
+function submitAddUser() {
+  const name     = document.getElementById('add-user-name').value.trim();
+  const email    = document.getElementById('add-user-email').value.trim().toLowerCase();
+  const password = document.getElementById('add-user-password').value;
+  const role     = document.getElementById('add-user-role').value;
+  const errEl    = document.getElementById('add-user-error');
+
+  errEl.style.display = 'none';
+
+  if (!name) {
+    errEl.textContent = 'Name is required.';
+    errEl.style.display = 'block';
+    document.getElementById('add-user-name').classList.add('error');
+    return;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Enter a valid email address.';
+    errEl.style.display = 'block';
+    document.getElementById('add-user-email').classList.add('error');
+    return;
+  }
+  if (!password || password.length < 6) {
+    errEl.textContent = 'Password must be at least 6 characters.';
+    errEl.style.display = 'block';
+    document.getElementById('add-user-password').classList.add('error');
+    return;
+  }
+
+  const users = getUsers();
+  if (users.find(u => u.email === email)) {
+    errEl.textContent = 'An account with this email already exists.';
+    errEl.style.display = 'block';
+    document.getElementById('add-user-email').classList.add('error');
+    return;
+  }
+
+  users.push({ name, email, password, role });
+  saveUsers(users);
+  closeAddUserModal();
+  updateStats();
+  renderDashboard();
+  renderUsersTable();
 }
 
 
