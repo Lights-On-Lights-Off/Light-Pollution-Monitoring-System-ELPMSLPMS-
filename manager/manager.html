@@ -41,16 +41,16 @@
 
     /* ── App Shell ── */
     .shell {
-      position: relative; z-index: 1;
+      position: relative;
       display: flex;
       height: 100vh;
-      overflow: hidden;
     }
 
     /* ──────────────────────────
        SIDEBAR
     ────────────────────────── */
     .sidebar {
+      position: relative; /* overridden to fixed on mobile */
       width: var(--sidebar-w);
       flex-shrink: 0;
       background: var(--sidebar);
@@ -482,12 +482,151 @@
     .modal-overlay { transition: opacity 0.2s; }
     .leaflet-interactive { cursor: pointer; }
 
-/* ── Leaflet Dark Filter (all maps including location picker) ─────────── */
+/* Inverts map tiles to fit the dark theme; satellite-active disables it so imagery shows in true color */
 .leaflet-layer,
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out,
 .leaflet-control-attribution {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+/* Hamburger button — hidden on desktop, shown on mobile */
+.menu-toggle {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  background: transparent;
+  border: 1px solid var(--stroke);
+  border-radius: 7px;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  z-index: 10;
+  position: relative;
+}
+.menu-toggle:hover { background: rgba(255,255,255,0.06); color: #fff; }
+
+/* Full-screen overlay behind the open sidebar drawer */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 300;
+}
+.sidebar-overlay.open { display: block; }
+
+/* ════════════════════════════════════
+   TABLET (≤ 900px)
+════════════════════════════════════ */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 210px; }
+  .brand-texts h2 { font-size: 0.95rem; }
+  .brand-texts p { font-size: 0.75rem; }
+  .content-area { padding: 14px 16px 28px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ════════════════════════════════════
+   MOBILE (≤ 768px)
+════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Sidebar becomes an off-screen fixed drawer */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--sidebar-w);
+    height: 100dvh;
+    z-index: 400;
+    transform: translateX(-100%);
+    transition: transform 0.26s cubic-bezier(0.22,1,0.36,1);
+    overflow-y: auto;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .sidebar.open { transform: translateX(0); box-shadow: 4px 0 32px rgba(0,0,0,0.6); }
+
+  /* Shell: single column — sidebar not in flow */
+  .shell { overflow: visible; display: block; height: 100vh; }
+
+  /* Main fills full shell width */
+  .main { width: 100%; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Show hamburger */
+  .menu-toggle { display: flex; }
+
+  .topbar { padding: 0 12px; gap: 10px; height: 58px; }
+  .topbar-sub { display: none; }
+  #page-title { font-size: 1.05rem; }
+
+  #manager-name { display: none; }
+  .manager-pill { padding: 4px 8px; }
+
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { padding: 12px 14px; gap: 10px; }
+  .stat-num { font-size: 1.5rem; }
+  .stat-lbl { font-size: 0.88rem; }
+  .stat-icon { width: 36px; height: 36px; }
+
+  .dash-grid { grid-template-columns: 1fr; }
+  .content-area { padding: 12px 12px 28px; }
+
+  .card-head { flex-wrap: wrap; gap: 8px; padding: 12px 14px; }
+  .card-head-actions { flex-wrap: wrap; gap: 6px; }
+  .card-head h3 { font-size: 1rem; }
+  .card-body { padding: 12px 14px; }
+
+  /* Tables scroll horizontally */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 600px; }
+  th, td { padding: 8px 10px; font-size: 0.88rem; }
+
+  #manager-campus-map { height: 300px; }
+
+  /* Modal: full-width with safe margins */
+  .modal-overlay { padding: 12px; }
+  .modal-box { max-width: 100%; width: 100%; margin: 0; border-radius: 12px; }
+  .modal-body { padding: 14px; }
+  .modal-head { padding: 13px 14px; }
+
+  .form-row { grid-template-columns: 1fr; }
+  .form-actions { flex-wrap: wrap; }
+  .form-actions .btn { flex: 1; justify-content: center; }
+
+  .buildings-grid { grid-template-columns: 1fr; padding: 12px; }
+  .building-card { padding: 13px; }
+
+  /* Ensure dropdown select is full-width on mobile */
+  .card-head .filter-select { width: 100%; }
+}
+
+/* ════════════════════════════════════
+   SMALL MOBILE (≤ 480px)
+════════════════════════════════════ */
+@media (max-width: 480px) {
+  .topbar { padding: 0 10px; height: 54px; }
+  #page-title { font-size: 0.95rem; }
+
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-num { font-size: 1.3rem; }
+  .stat-lbl { font-size: 0.78rem; }
+  .stat-card { padding: 10px 10px; gap: 8px; }
+  .stat-icon { width: 30px; height: 30px; border-radius: 8px; }
+
+  .content-area { padding: 10px 10px 24px; }
+
+  .btn { font-size: 0.82rem; padding: 6px 10px; }
+  .btn-sm { font-size: 0.75rem; padding: 4px 7px; }
+
+  .td-actions { flex-wrap: wrap; gap: 4px; }
+  table { min-width: 500px; }
+  th, td { padding: 6px 8px; font-size: 0.8rem; }
+
+  .modal-box { border-radius: 10px; }
+  .modal-body { padding: 12px; }
+  #location-picker-map { height: 160px; }
+
+  .bc-actions { flex-wrap: wrap; }
+  .badge { font-size: 0.75rem; padding: 2px 7px; }
 }
   </style>
 </head>
@@ -495,6 +634,7 @@
 
 <canvas id="bg-canvas"></canvas>
 
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="shell">
 
   <!-- SIDEBAR -->
@@ -573,9 +713,16 @@
 
     <!-- Top bar -->
     <div class="topbar">
-      <div>
-        <div id="page-title">Dashboard Overview</div>
-        <div class="topbar-sub">Monitor and manage light pollution across NBSC campus</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+          </svg>
+        </button>
+        <div>
+          <div id="page-title">Dashboard Overview</div>
+          <div class="topbar-sub">Monitor and manage light pollution across NBSC campus</div>
+        </div>
       </div>
       <div class="manager-pill">
         <div class="manager-avatar" id="manager-avatar">AD</div>

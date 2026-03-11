@@ -794,6 +794,22 @@ function checkForNewRequests() {
 
 function setupEventListeners() {
 
+  // Hamburger menu: open/close sidebar drawer on mobile
+  const menuToggle     = document.getElementById('menuToggle');
+  const sidebar        = document.querySelector('.sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  function openSidebar()  { sidebar?.classList.add('open'); sidebarOverlay?.classList.add('open'); }
+  function closeSidebar() { sidebar?.classList.remove('open'); sidebarOverlay?.classList.remove('open'); }
+
+  menuToggle?.addEventListener('click', openSidebar);
+  sidebarOverlay?.addEventListener('click', closeSidebar);
+
+  // Close sidebar after a nav item is tapped on mobile
+  document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => { if (window.innerWidth <= 768) closeSidebar(); });
+  });
+
   document.getElementById('status-filter').addEventListener('change', e => {
     statusFilter = e.target.value;
     renderRequestsTable();
