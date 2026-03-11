@@ -1,4 +1,4 @@
-//  NBSC Admin Dashboard — manager.js
+// NBSC Manager Dashboard — manager.js
 
 (function () {
   const canvas = document.getElementById('bg-canvas');
@@ -57,16 +57,13 @@
 })();
 
 
-//  DATA
-
-
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 const POLLUTION_COLORS = { low: '#22c55e', moderate: '#f59e0b', high: '#ef4444' };
 
 let requests        = [];
 let deletedRequests = [];
 
-let buildings = [
+const DEFAULT_BUILDINGS = [
   { id: 1, name: 'SWDC Building',    lat: 8.360309, lng: 124.867777, pollutionLevel: 'high',     description: 'Main administrative offices' },
   { id: 2, name: 'NBSC Library',     lat: 8.359264, lng: 124.867894, pollutionLevel: 'moderate', description: 'Main library and study center' },
   { id: 3, name: 'NBSC Clinic',      lat: 8.359158, lng: 124.868179, pollutionLevel: 'low',      description: 'Medical services and health center' },
@@ -76,31 +73,65 @@ let buildings = [
   { id: 7, name: 'Cafeteria',        lat: 8.358900, lng: 124.868200, pollutionLevel: 'moderate', description: 'Student dining facility' },
 ];
 
-// State
+function loadBuildings() {
+  try {
+    const raw = localStorage.getItem('nbscBuildings');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      buildings = parsed.map(b => ({
+        id:            b.id,
+        name:          b.name,
+        lat:           Array.isArray(b.coordinates) ? b.coordinates[0] : b.lat,
+        lng:           Array.isArray(b.coordinates) ? b.coordinates[1] : b.lng,
+        pollutionLevel:b.pollutionLevel,
+        description:   b.description || '',
+        lux:           b.lux,
+      }));
+    } else {
+      buildings = DEFAULT_BUILDINGS.map(b => ({ ...b }));
+      persistBuildings();
+    }
+  } catch (e) {
+    buildings = DEFAULT_BUILDINGS.map(b => ({ ...b }));
+  }
+}
+
+function persistBuildings() {
+  const toSave = buildings.map(b => ({
+    id:            b.id,
+    name:          b.name,
+    coordinates:   [b.lat, b.lng],
+    pollutionLevel:b.pollutionLevel,
+    description:   b.description || '',
+    lux:           b.lux !== undefined ? b.lux : 50,
+    online:        true,
+  }));
+  localStorage.setItem('nbscBuildings', JSON.stringify(toSave));
+}
+
+let buildings = [];
+
 let currentSection  = 'dashboard';
 let statusFilter    = 'all';
 let pollutionFilter = 'all';
 let mapFilter       = 'all';
 let editingBuildingId = null;
 
-// Map
 let adminMap;
 let adminMapMarkers    = [];
 let adminSatelliteLayer;
 let adminStandardLayer;
 let adminCurrentTile;
 
-// Location picker (building modal)
 let locationPickerMap    = null;
 let locationPickerMarker = null;
 
-
-//  INIT
 
 document.addEventListener('DOMContentLoaded', () => {
   seedDefaultManager();
   checkManagerAuth();
   loadManagerProfile();
+  loadBuildings();
   loadRequests();
   updateQuickStats();
   renderDashboard();
@@ -141,8 +172,6 @@ function checkManagerAuth() {
 }
 
 
-//  PROFILE
-
 function loadManagerProfile() {
   const raw = localStorage.getItem('nbsc_session');
   if (!raw) return;
@@ -156,8 +185,6 @@ function loadManagerProfile() {
 }
 
 
-//  NAVIGATION
-
 function initNavigation() {
   document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
     btn.addEventListener('click', () => navigateTo(btn.dataset.section));
@@ -165,17 +192,14 @@ function initNavigation() {
 }
 
 function navigateTo(id) {
-  // nav highlight
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navBtn = document.querySelector(`.nav-item[data-section="${id}"]`);
   if (navBtn) navBtn.classList.add('active');
 
-  // sections
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(id);
   if (target) target.classList.add('active');
 
-  // page title
   const titles = {
     'dashboard':  'Dashboard Overview',
     'requests':   'Data Requests Management',
@@ -185,7 +209,6 @@ function navigateTo(id) {
   };
   document.getElementById('page-title').textContent = titles[id] || 'Dashboard';
 
-  // render content
   switch (id) {
     case 'dashboard':   renderDashboard();      break;
     case 'requests':    renderRequestsTable();  break;
@@ -198,8 +221,6 @@ function navigateTo(id) {
 }
 
 
-//  STATS
-
 function updateQuickStats() {
   document.getElementById('pending-count').textContent       = requests.filter(r => r.status === 'pending').length;
   document.getElementById('approved-count').textContent      = requests.filter(r => r.status === 'approved').length;
@@ -207,8 +228,6 @@ function updateQuickStats() {
   document.getElementById('total-buildings-count').textContent = buildings.length;
 }
 
-
-//  DASHBOARD
 
 function renderDashboard() {
   renderDashboardRequests();
@@ -225,12 +244,12 @@ function renderDashboardRequests() {
   el.innerHTML = recent.map(r => `
     <div class="mini-item">
       <div class="mini-item-left">
-        <span class="mini-item-name">${escHtml(r.name)}</span>
+        <span class="mini-item-name">${escHtml(r.userName)}</span>
         <span class="mini-item-email">${escHtml(r.email)}</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span class="badge ${r.status}">${cap(r.status)}</span>
-        <span style="font-size:0.75rem;color:var(--muted);">${r.date}</span>
+        <span style="font-size:0.75rem;color:var(--muted);">${r.submittedDate}</span>
       </div>
     </div>
   `).join('');
@@ -260,8 +279,6 @@ function renderDashboardBuildings() {
 }
 
 
-//  REQUESTS TABLE
-
 function renderRequestsTable() {
   const tbody  = document.getElementById('requests-tbody');
   const empty  = document.getElementById('requests-empty');
@@ -277,11 +294,11 @@ function renderRequestsTable() {
   tbody.innerHTML = filtered.map(r => `
     <tr>
       <td><span style="font-family:monospace;font-size:0.82rem;color:var(--accent);">${escHtml(r.id)}</span></td>
-      <td><strong>${escHtml(r.name)}</strong></td>
+      <td><strong>${escHtml(r.userName)}</strong></td>
       <td style="color:var(--muted);">${escHtml(r.email)}</td>
       <td>${escHtml(r.location || '—')}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(r.purpose || '—')}</td>
-      <td style="color:var(--muted);white-space:nowrap;">${escHtml(r.date)}</td>
+      <td style="color:var(--muted);white-space:nowrap;">${escHtml(r.submittedDate)}</td>
       <td><span class="badge ${r.status}">${cap(r.status)}</span></td>
       <td>
         <div class="td-actions">
@@ -312,12 +329,35 @@ function getFilteredRequests() {
 
 
 
+function getSessionName() {
+  try {
+    const s = JSON.parse(localStorage.getItem('nbsc_session'));
+    return (s && s.name) ? s.name : 'Manager';
+  } catch (e) { return 'Manager'; }
+}
+
+function logActivity(action, detail) {
+  try {
+    const log = JSON.parse(localStorage.getItem('nbscActivityLog') || '[]');
+    log.unshift({
+      actor:     getSessionName(),
+      action,
+      detail,
+      timestamp: new Date().toISOString(),
+    });
+    // Cap the log at 100 entries so localStorage doesn't grow unbounded
+    localStorage.setItem('nbscActivityLog', JSON.stringify(log.slice(0, 100)));
+  } catch (e) { /* non-critical */ }
+}
+
 function approveRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
-  r.status       = 'approved';
+  r.status     = 'approved';
   r.reviewedAt = new Date().toISOString();
+  r.reviewedBy = getSessionName();
   saveRequests();
+  logActivity('approved_request', `Approved request #${r.id} from ${r.userName || r.email || '—'}`);
   notifyUser(r, 'approved');
   updateQuickStats();
   renderRequestsTable();
@@ -327,9 +367,11 @@ function approveRequest(id) {
 function denyRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
-  r.status       = 'denied';
+  r.status     = 'denied';
   r.reviewedAt = new Date().toISOString();
+  r.reviewedBy = getSessionName();
   saveRequests();
+  logActivity('denied_request', `Denied request #${r.id} from ${r.userName || r.email || '—'}`);
   notifyUser(r, 'denied');
   updateQuickStats();
   renderRequestsTable();
@@ -339,7 +381,7 @@ function denyRequest(id) {
 function deleteRequest(id) {
   const r = requests.find(r => r.id === id);
   if (!r) return;
-  if (!confirm(`Move ${r.name}'s request to the recycle bin?`)) return;
+  if (!confirm(`Move ${r.userName}'s request to the recycle bin?`)) return;
   deletedRequests.push({ ...r, deletedOn: new Date().toISOString() });
   requests = requests.filter(r => r.id !== id);
   saveRequests();
@@ -348,8 +390,6 @@ function deleteRequest(id) {
   if (currentSection === 'dashboard') renderDashboard();
 }
 
-
-//  BUILDINGS GRID
 
 function renderBuildingsGrid() {
   const grid = document.getElementById('buildings-grid');
@@ -392,7 +432,7 @@ function getFilteredBuildings() {
 function openBuildingModal(isEdit = false) {
   document.getElementById('modal-title').textContent = isEdit ? 'Edit Building' : 'Add Building';
   document.getElementById('building-modal').classList.add('open');
-  // Init picker after modal is visible so the map renders correctly
+  // Delay map init until the modal is visible; Leaflet needs the container to have dimensions
   setTimeout(() => initLocationPicker(), 80);
 }
 
@@ -401,9 +441,7 @@ function closeBuildingModal() {
   document.getElementById('building-form').reset();
   editingBuildingId = null;
   document.getElementById('modal-title').textContent = 'Add Building';
-  // Reset picker display
   resetLocationPickerDisplay();
-  // Destroy picker map so it re-initialises fresh next open
   if (locationPickerMap) {
     locationPickerMap.remove();
     locationPickerMap    = null;
@@ -432,7 +470,7 @@ function setLocationPickerPin(lat, lng) {
 }
 
 function initLocationPicker() {
-  if (locationPickerMap) return; // already initialised
+  if (locationPickerMap) return; // map already exists from a previous open; skip re-init
 
   locationPickerMap = L.map('location-picker-map', {
     center:     [8.3595, 124.8675],
@@ -482,7 +520,7 @@ function placePickerMarker(lat, lng) {
     locationPickerMarker = L.marker([lat, lng], { icon, draggable: true })
       .addTo(locationPickerMap);
 
-    // Allow dragging to fine-tune position
+    // Dragging the pin updates the stored coordinates in real time
     locationPickerMarker.on('dragend', e => {
       const { lat, lng } = e.target.getLatLng();
       setLocationPickerPin(lat, lng);
@@ -507,6 +545,8 @@ function deleteBuilding(id) {
   if (!b) return;
   if (!confirm(`Delete ${b.name}? This cannot be undone.`)) return;
   buildings = buildings.filter(b => b.id !== id);
+  persistBuildings();
+  logActivity('deleted_building', `Deleted building "${b.name}"`);
   updateQuickStats();
   renderBuildingsGrid();
   if (adminMap) renderMapMarkers();
@@ -520,7 +560,7 @@ function handleBuildingSubmit(e) {
   const lng = parseFloat(document.getElementById('building-lng').value);
 
   if (isNaN(lat) || isNaN(lng)) {
-    // Highlight the map as required
+    // Flash the map picker red to indicate a pin location is required before saving
     const mapEl = document.getElementById('location-picker-map');
     mapEl.style.borderColor = '#ef4444';
     mapEl.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.2)';
@@ -540,22 +580,21 @@ function handleBuildingSubmit(e) {
   };
 
   if (editingBuildingId !== null) {
-    // Update existing
-    const idx = buildings.findIndex(b => b.id === editingBuildingId);
+      const idx = buildings.findIndex(b => b.id === editingBuildingId);
     if (idx !== -1) buildings[idx] = { ...buildings[idx], ...data };
+    logActivity('edited_building', `Edited building "${data.name}"`);
   } else {
-    // Add new
-    buildings.push({ id: Date.now(), ...data });
+      buildings.push({ id: Date.now(), ...data });
+    logActivity('added_building', `Added building "${data.name}"`);
   }
 
+  persistBuildings();
   updateQuickStats();
   renderBuildingsGrid();
   if (adminMap) renderMapMarkers();
   closeBuildingModal();
 }
 
-
-//  MAP
 
 function initManagerMap() {
   if (adminMap) return;
@@ -580,7 +619,6 @@ function initManagerMap() {
   adminCurrentTile = adminStandardLayer;
   adminCurrentTile.addTo(adminMap);
 
-  // Layer toggle control
   const LayerToggle = L.Control.extend({
     options: { position: 'bottomright' },
     onAdd() {
@@ -600,6 +638,7 @@ function initManagerMap() {
         adminCurrentTile.addTo(adminMap);
         btn.innerHTML = adminCurrentTile === adminSatelliteLayer ? '🗺️' : '🛰️';
         const container = adminMap.getContainer();
+        // Removes the dark CSS filter on the map container when satellite view is active
         if (adminCurrentTile === adminSatelliteLayer) {
           container.classList.add('satellite-active');
         } else {
@@ -644,8 +683,6 @@ function renderMapMarkers() {
 }
 
 
-//  RECYCLE BIN
-
 function renderRecycleBin() {
   const tbody = document.getElementById('recycle-bin-tbody');
   const table = document.getElementById('recycle-bin-table');
@@ -663,9 +700,9 @@ function renderRecycleBin() {
   tbody.innerHTML = deletedRequests.map(r => `
     <tr>
       <td><span style="font-family:monospace;font-size:0.82rem;color:var(--accent);">${escHtml(r.id)}</span></td>
-      <td><strong>${escHtml(r.name)}</strong></td>
+      <td><strong>${escHtml(r.userName)}</strong></td>
       <td style="color:var(--muted);">${escHtml(r.email)}</td>
-      <td style="color:var(--muted);">${escHtml(r.date)}</td>
+      <td style="color:var(--muted);">${escHtml(r.submittedDate)}</td>
       <td><span class="badge ${r.status}">${cap(r.status)}</span></td>
       <td style="color:var(--muted);white-space:nowrap;">${formatDate(r.deletedOn)}</td>
       <td>
@@ -698,7 +735,7 @@ function restoreRequest(id) {
 function permanentlyDeleteRequest(id) {
   const r = deletedRequests.find(r => r.id === id);
   if (!r) return;
-  if (!confirm(`Permanently delete ${r.name}'s request? This cannot be undone.`)) return;
+  if (!confirm(`Permanently delete ${r.userName}'s request? This cannot be undone.`)) return;
   deletedRequests = deletedRequests.filter(r => r.id !== id);
   renderRecycleBin();
 }
@@ -710,8 +747,6 @@ function emptyRecycleBin() {
   renderRecycleBin();
 }
 
-
-//  STORAGE
 
 function loadRequests() {
   try {
@@ -743,8 +778,8 @@ function notifyUser(request, status) {
 }
 
 
-//  AUTO-DETECT NEW REQUESTS
 
+// Checks if the user dashboard flagged a new request submission; auto-navigates to requests tab if recent
 function checkForNewRequests() {
   const flag = localStorage.getItem('managerShowRequests');
   const ts   = localStorage.getItem('managerShowRequestsTimestamp');
@@ -757,37 +792,29 @@ function checkForNewRequests() {
 }
 
 
-//  EVENT LISTENERS
-
 function setupEventListeners() {
 
-  // Status filter
   document.getElementById('status-filter').addEventListener('change', e => {
     statusFilter = e.target.value;
     renderRequestsTable();
   });
 
-  // Building pollution filter
   document.getElementById('pollution-filter').addEventListener('change', e => {
     pollutionFilter = e.target.value;
     renderBuildingsGrid();
   });
 
-  // Map filter
   document.getElementById('map-filter').addEventListener('change', e => {
     mapFilter = e.target.value;
     renderMapMarkers();
   });
 
-  // Building form submit
   document.getElementById('building-form').addEventListener('submit', handleBuildingSubmit);
 
-  // Close modal on backdrop click
   document.getElementById('building-modal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeBuildingModal();
   });
 
-  // Logout
   document.getElementById('logoutBtn').addEventListener('click', () => {
     if (!confirm('Are you sure you want to logout?')) return;
     localStorage.removeItem('nbsc_session');
@@ -798,8 +825,6 @@ function setupEventListeners() {
   });
 }
 
-
-//  HELPERS
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -817,7 +842,6 @@ function escHtml(str) {
 }
 
 
-//  GLOBAL EXPORTS (for HTML onclick)
 
 window.approveRequest           = approveRequest;
 window.denyRequest              = denyRequest;

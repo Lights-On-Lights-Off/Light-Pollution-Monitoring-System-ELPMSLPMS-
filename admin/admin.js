@@ -1,6 +1,5 @@
-//  NBSC Admin App — admin.js
-//  All localStorage paths relative to the
-//  shared system (same keys as manager/user)
+// NBSC Admin App — admin.js
+// Reads from the same localStorage keys as manager and user (nbsc_users, nbscDataRequests, nbscActivityLog)
 
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
@@ -67,8 +66,6 @@ function loadAdminProfile() {
 }
 
 
-//  NAVIGATION
-
 const PAGE_LABELS = {
   dashboard: { title: 'Dashboard',        sub: 'System overview' },
   users:     { title: 'Users Management', sub: 'Manage accounts and roles' },
@@ -91,8 +88,6 @@ function navigate(btn) {
 }
 
 
-//  DATA HELPERS
-
 function getUsers() {
   try { return JSON.parse(localStorage.getItem('nbsc_users')) || []; }
   catch (e) { return []; }
@@ -113,14 +108,28 @@ function getNotifications() {
 }
 
 function getActivityLog() {
-  // Manager activity is derived from approved/denied requests
-  return getRequests()
+  const entries = [];
+
+  // Source 1: derive events from reviewed requests (approved/denied)
+  getRequests()
     .filter(r => r.status === 'approved' || r.status === 'denied')
-    .sort((a, b) => new Date(b.reviewedAt || b.date) - new Date(a.reviewedAt || a.date));
+    .forEach(r => entries.push({
+      _type:     'request',
+      actor:     r.reviewedBy || 'A manager',
+      action:    r.status === 'approved' ? 'approved_request' : 'denied_request',
+      detail:    `Request #${r.id} from ${r.userName || r.email || '—'}`,
+      timestamp: r.reviewedAt || r.submittedDate,
+    }));
+
+  // Source 2: explicit log entries written by manager.js logActivity()
+  try {
+    const log = JSON.parse(localStorage.getItem('nbscActivityLog') || '[]');
+    log.forEach(e => entries.push({ _type: 'log', ...e }));
+  } catch (e) { /* ignore */ }
+
+  return entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
 
-
-//  STATS
 
 function updateStats() {
   const users    = getUsers().filter(u => u.role !== 'admin');
@@ -137,8 +146,6 @@ function updateStats() {
   document.getElementById('stat-pending').textContent        = pending;
 }
 
-
-//  DASHBOARD
 
 function renderDashboard() {
   renderRecentUsers();
@@ -177,28 +184,38 @@ function renderActivityFeed() {
     return;
   }
 
-  feed.innerHTML = activities.map(r => {
-    const managerName = r.reviewedBy || 'A manager';
-    const statusClass = r.status;
-    const statusWord  = cap(r.status);
-    const time        = r.reviewedAt ? formatTime(r.reviewedAt) : formatTime(r.date);
+  feed.innerHTML = activities.map(e => {
+    const dotClass = {
+      approved_request: 'approved',
+      denied_request:   'denied',
+      added_building:   'info',
+      edited_building:  'info',
+      deleted_building: 'denied',
+    }[e.action] || 'info';
+
+    const actionLabel = {
+      approved_request: 'approved',
+      denied_request:   'denied',
+      added_building:   'added building',
+      edited_building:  'edited building',
+      deleted_building: 'deleted building',
+    }[e.action] || e.action;
+
     return `
       <div class="activity-item">
-        <div class="activity-dot ${statusClass}"></div>
+        <div class="activity-dot ${dotClass}"></div>
         <div>
           <div class="activity-text">
-            <strong>${escHtml(managerName)}</strong> ${statusWord.toLowerCase()} request
-            <strong>#${escHtml(r.id)}</strong> from <strong>${escHtml(r.name || r.email || '—')}</strong>
+            <strong>${escHtml(e.actor)}</strong> ${escHtml(actionLabel)} —
+            ${escHtml(e.detail)}
           </div>
-          <div class="activity-time">${time}</div>
+          <div class="activity-time">${formatTime(e.timestamp)}</div>
         </div>
       </div>
     `;
   }).join('');
 }
 
-
-//  USERS MANAGEMENT
 
 function renderUsersTable() {
   const filter = document.getElementById('role-filter').value;
@@ -280,19 +297,37 @@ let pendingDeleteEmail = null;
 function confirmDeleteUser(email) {
   const users = getUsers();
   const user  = users.find(u => u.email === email);
-  if (!user) return;
+  if (!user) {
+    document.getElementById('confirm-title').textContent  = 'Error';
+    document.getElementById('confirm-message').innerHTML  = 'Account does not exist.';
+    document.getElementById('confirm-ok-btn').className   = 'btn btn-ghost';
+    document.getElementById('confirm-ok-btn').textContent = 'Close';
+    pendingConfirmAction = null;
+    document.getElementById('confirm-modal').classList.add('open');
+    return;
+  }
 
   pendingDeleteEmail = email;
   document.getElementById('confirm-title').textContent   = 'Delete Account';
   document.getElementById('confirm-message').innerHTML   =
     `Are you sure you want to delete the account for <strong>${escHtml(user.name || user.email)}</strong>? This cannot be undone.`;
   document.getElementById('confirm-ok-btn').className    = 'btn btn-danger';
+  document.getElementById('confirm-ok-btn').textContent  = 'Confirm';
   document.getElementById('confirm-modal').classList.add('open');
   pendingConfirmAction = doDeleteUser;
 }
 
 function doDeleteUser() {
   if (!pendingDeleteEmail) return;
+
+  // If the deleted account is the one currently logged in, end their session immediately
+  try {
+    const session = JSON.parse(localStorage.getItem('nbsc_session'));
+    if (session && session.email === pendingDeleteEmail) {
+      localStorage.removeItem('nbsc_session');
+    }
+  } catch (e) { /* ignore */ }
+
   let users = getUsers();
   users = users.filter(u => u.email !== pendingDeleteEmail);
   saveUsers(users);
@@ -303,13 +338,11 @@ function doDeleteUser() {
 }
 
 
-//  SYSTEM SETTINGS
-
 function renderStorageUsage() {
   let total = 0;
   for (const key in localStorage) {
     if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
-      total += (localStorage[key].length + key.length) * 2; // UTF-16 bytes
+      total += (localStorage[key].length + key.length) * 2; // each JS character is 2 bytes in UTF-16
     }
   }
   const kb      = (total / 1024).toFixed(1);
@@ -377,6 +410,8 @@ function confirmAction() {
 
 function closeConfirmModal() {
   document.getElementById('confirm-modal').classList.remove('open');
+  document.getElementById('confirm-ok-btn').textContent = 'Confirm';
+  document.getElementById('confirm-ok-btn').className   = 'btn btn-danger';
   pendingConfirmAction = null;
   pendingDeleteEmail   = null;
 }
@@ -387,12 +422,11 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     if (e.target === overlay) {
       closeRoleModal();
       closeConfirmModal();
+      closeAddUserModal();
     }
   });
 });
 
-
-//  UTILS
 
 function escHtml(str) {
   return String(str)
@@ -412,7 +446,64 @@ function formatTime(dateStr) {
 }
 
 
-//  INIT
+function openAddUserModal() {
+  document.getElementById('add-user-name').value     = '';
+  document.getElementById('add-user-email').value    = '';
+  document.getElementById('add-user-password').value = '';
+  document.getElementById('add-user-role').value     = 'user';
+  document.getElementById('add-user-error').style.display = 'none';
+  document.getElementById('add-user-error').textContent   = '';
+  document.getElementById('add-user-modal').classList.add('open');
+}
+
+function closeAddUserModal() {
+  document.getElementById('add-user-modal').classList.remove('open');
+}
+
+function submitAddUser() {
+  const name     = document.getElementById('add-user-name').value.trim();
+  const email    = document.getElementById('add-user-email').value.trim().toLowerCase();
+  const password = document.getElementById('add-user-password').value;
+  const role     = document.getElementById('add-user-role').value;
+  const errEl    = document.getElementById('add-user-error');
+
+  errEl.style.display = 'none';
+
+  if (!name) {
+    errEl.textContent = 'Name is required.';
+    errEl.style.display = 'block';
+    document.getElementById('add-user-name').classList.add('error');
+    return;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Enter a valid email address.';
+    errEl.style.display = 'block';
+    document.getElementById('add-user-email').classList.add('error');
+    return;
+  }
+  if (!password || password.length < 6) {
+    errEl.textContent = 'Password must be at least 6 characters.';
+    errEl.style.display = 'block';
+    document.getElementById('add-user-password').classList.add('error');
+    return;
+  }
+
+  const users = getUsers();
+  if (users.find(u => u.email === email)) {
+    errEl.textContent = 'An account with this email already exists.';
+    errEl.style.display = 'block';
+    document.getElementById('add-user-email').classList.add('error');
+    return;
+  }
+
+  users.push({ name, email, password, role });
+  saveUsers(users);
+  closeAddUserModal();
+  updateStats();
+  renderDashboard();
+  renderUsersTable();
+}
+
 
 loadAdminProfile();
 updateStats();

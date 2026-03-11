@@ -273,7 +273,7 @@
 
       <div id="alert-box" class="alert"></div>
 
-      <!-- ── Login Form ── -->
+      <!-- Login Form -->
       <form class="form" id="login-form" autocomplete="off">
         <div class="form-group">
           <label for="login-email">Email Address</label>
@@ -291,7 +291,7 @@
         </div>
       </form>
 
-      <!-- ── Register Form ── -->
+      <!-- Register Form -->
       <form class="form" id="register-form" style="display:none;" autocomplete="off">
         <div class="form-group">
           <label for="reg-name">Full Name</label>
@@ -326,7 +326,8 @@
 
   <script>
     // Auto-switch to register form if redirected with #register
-    if (window.location.hash === '#register') {
+    // Open the register tab directly when the page is linked with #register
+  if (window.location.hash === '#register') {
       switchForm('register');
     }
 
@@ -515,7 +516,7 @@
           return;
         }
 
-        users.push({ email, password, name, org });
+        users.push({ email, password, name, org, role: 'user' });
         saveUsers(users);
         showAlert('success');
         setTimeout(() => switchForm('login'), 1400);

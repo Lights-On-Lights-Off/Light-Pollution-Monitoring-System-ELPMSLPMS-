@@ -1,11 +1,11 @@
 INSERT INTO data_requests
-  (request_code, user_id, building_id, data_type, purpose, additional_notes,
-   start_date, end_date, status, reviewed_by, reviewed_at, submitted_at)
+  (request_code, user_id, user_name, building_id, location, data_type, purpose,
+   additional_notes, start_date, end_date, status, reviewed_by, reviewed_at, submitted_at)
 VALUES
 
   (
     'REQ-1001',
-    1, 5,
+    1, 'Default User', 5, 'BSBA Building',
     'Light Intensity',
     'Research on light pollution effects on nighttime biodiversity near the BSBA building.',
     'Need hourly lux readings if available.',
@@ -16,7 +16,7 @@ VALUES
 
   (
     'REQ-1002',
-    1, 3,
+    1, 'Default User', 3, 'NBSC Library',
     'Pollution Level',
     'Thesis data collection on low-light campus areas for environmental science study.',
     NULL,
@@ -27,7 +27,7 @@ VALUES
 
   (
     'REQ-1003',
-    1, 1,
+    1, 'Default User', 1, 'SWDC Building',
     'Light Intensity',
     'Personal project.',
     NULL,
@@ -38,7 +38,7 @@ VALUES
 
   (
     'REQ-1004',
-    1, 6,
+    1, 'Default User', 6, 'ICS Laboratory',
     'Light Intensity',
     'Comparing light pollution levels between laboratory buildings and open areas.',
     'Please include min and max readings per hour.',

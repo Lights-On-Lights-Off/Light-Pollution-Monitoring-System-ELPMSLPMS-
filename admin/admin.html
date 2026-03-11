@@ -13,7 +13,7 @@
 
 <div class="shell">
 
-  <!-- ══ SIDEBAR ══ -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-dot"></div>
@@ -56,7 +56,7 @@
     </div>
   </aside>
 
-  <!-- ══ MAIN ══ -->
+  <!-- MAIN -->
   <main class="main">
 
     <!-- Topbar -->
@@ -74,7 +74,7 @@
     <!-- Content -->
     <div class="content-area">
 
-      <!-- ── Stat Cards (always visible) ── -->
+      <!-- Stat Cards (always visible) -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-icon clr-blue">
@@ -122,7 +122,7 @@
         </div>
       </div>
 
-      <!-- ══ DASHBOARD SECTION ══ -->
+      <!-- DASHBOARD SECTION -->
       <div class="section active" id="section-dashboard">
         <div class="dash-grid">
 
@@ -153,7 +153,7 @@
         </div>
       </div>
 
-      <!-- ══ USERS MANAGEMENT SECTION ══ -->
+      <!-- USERS MANAGEMENT SECTION -->
       <div class="section" id="section-users">
         <div class="card">
           <div class="card-head">
@@ -164,6 +164,12 @@
                 <option value="user">User</option>
                 <option value="manager">Manager</option>
               </select>
+              <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+                Add Account
+              </button>
             </div>
           </div>
           <div class="table-wrap">
@@ -186,7 +192,7 @@
         </div>
       </div>
 
-      <!-- ══ SYSTEM SETTINGS SECTION ══ -->
+      <!-- SYSTEM SETTINGS SECTION -->
       <div class="section" id="section-settings">
         <div class="card">
           <div class="card-head"><h3>System Settings</h3></div>
@@ -241,7 +247,7 @@
   </main>
 </div><!-- /shell -->
 
-<!-- ══ EDIT ROLE MODAL ══ -->
+<!-- EDIT ROLE MODAL -->
 <div class="modal-overlay" id="role-modal">
   <div class="modal-box">
     <div class="modal-head">
@@ -265,7 +271,7 @@
   </div>
 </div>
 
-<!-- ══ CONFIRM MODAL ══ -->
+<!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="confirm-modal">
   <div class="modal-box">
     <div class="modal-head">
@@ -277,6 +283,42 @@
       <div class="form-actions">
         <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmAction()">Confirm</button>
         <button class="btn btn-ghost" onclick="closeConfirmModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="add-user-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Add Account</h3>
+      <button class="modal-close" onclick="closeAddUserModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="add-user-name" class="form-input" placeholder="e.g. Juan Dela Cruz" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="add-user-email" class="form-input" placeholder="e.g. juan@nbsc.edu.ph" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="add-user-password" class="form-input" placeholder="Enter password" autocomplete="new-password" />
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="add-user-role">
+          <option value="user">User</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+      <div id="add-user-error" style="font-size:0.82rem;color:#f87171;margin-bottom:10px;display:none;"></div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="submitAddUser()">Create Account</button>
+        <button class="btn btn-ghost" onclick="closeAddUserModal()">Cancel</button>
       </div>
     </div>
   </div>

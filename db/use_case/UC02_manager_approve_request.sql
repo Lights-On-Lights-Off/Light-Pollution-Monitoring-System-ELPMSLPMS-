@@ -20,13 +20,14 @@ VALUES
   );
 
 INSERT INTO activity_log
-  (actor_id, action, target_type, target_id, meta)
+  (actor_id, action, target_type, target_id, detail, meta)
 VALUES
   (
     2,
-    'approved',
+    'approved_request',
     'request',
     (SELECT id FROM data_requests WHERE request_code = 'REQ-1001'),
+    'Approved request REQ-1001 from Default User',
     '{"request_code": "REQ-1001", "building": "BSBA Building", "user": "Default User"}'
   );
 
