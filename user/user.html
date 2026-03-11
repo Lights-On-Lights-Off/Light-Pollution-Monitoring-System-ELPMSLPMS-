@@ -439,7 +439,8 @@
     @media (max-width: 768px) {
       /* Navbar */
       .navbar { padding: 0 12px; height: 60px; }
-      .nav-brand { font-size: 1rem; gap: 8px; }
+      .nav-brand { font-size: 0; gap: 8px; }
+      .nav-brand::after { content: "ELPMS"; font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; color: #fff; }
       .brand-badge { width: 10px; height: 10px; }
 
       /* User pill: hide email */
