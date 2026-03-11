@@ -1,12 +1,9 @@
 //  NBSC Admin App — admin.js
 //  All localStorage paths relative to the
-//  shared system 
+//  shared system (same keys as manager/user)
 
-
-// ── Capitalize ──
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
-// ── Animated Background Canvas 
 (function () {
   const canvas = document.getElementById('bg-canvas');
   if (!canvas) return;
@@ -63,41 +60,12 @@ const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
   loop();
 })();
 
-//  AUTH
-function checkAdminAuth() {
-  const raw = localStorage.getItem('nbsc_session');
-  if (!raw) { window.location.href = '../index.html'; return; }
-  try {
-    const session = JSON.parse(raw);
-    if (session.role !== 'admin') {
-      window.location.href = '../index.html';
-    }
-  } catch (e) {
-    window.location.href = '../index.html';
-  }
-}
 
 function loadAdminProfile() {
-  const raw = localStorage.getItem('nbsc_session');
-  if (!raw) return;
-  try {
-    const session  = JSON.parse(raw);
-    const name     = session.name || 'Admin';
-    const initials = name.split(' ').map(w => w[0].toUpperCase()).slice(0, 2).join('');
-    document.getElementById('admin-avatar').textContent = initials;
-    document.getElementById('admin-name').textContent   = name;
-  } catch (e) { /* ignore */ }
+  document.getElementById('admin-avatar').textContent = 'AD';
+  document.getElementById('admin-name').textContent   = 'NBSC Admin';
 }
 
-function seedDefaultAdmin() {
-  const raw   = localStorage.getItem('nbsc_users');
-  let users   = raw ? JSON.parse(raw) : [];
-  const exists = users.find(u => u.email === 'admin@example.com');
-  if (!exists) {
-    users.push({ email: 'admin@example.com', password: 'admin123', name: 'System Admin', role: 'admin' });
-    localStorage.setItem('nbsc_users', JSON.stringify(users));
-  }
-}
 
 //  NAVIGATION
 
@@ -122,7 +90,8 @@ function navigate(btn) {
   if (section === 'settings') renderStorageUsage();
 }
 
-//  DATA 
+
+//  DATA HELPERS
 
 function getUsers() {
   try { return JSON.parse(localStorage.getItem('nbsc_users')) || []; }
@@ -273,7 +242,6 @@ function renderUsersTable() {
 }
 
 
-// ── Edit Role Modal 
 let editingEmail = null;
 
 function openRoleModal(email) {
@@ -307,7 +275,6 @@ function saveRole() {
 }
 
 
-// ── Delete User 
 let pendingDeleteEmail = null;
 
 function confirmDeleteUser(email) {
@@ -334,6 +301,7 @@ function doDeleteUser() {
   renderDashboard();
   renderUsersTable();
 }
+
 
 //  SYSTEM SETTINGS
 
@@ -389,6 +357,7 @@ function confirmResetBuildings() {
   );
 }
 
+
 //  CONFIRM MODAL (generic)
 
 let pendingConfirmAction = null;
@@ -422,14 +391,6 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   });
 });
 
-//  LOGOUT
-
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  if (!confirm('Are you sure you want to logout?')) return;
-  localStorage.removeItem('nbsc_session');
-  window.location.href = '../index.html';
-});
-
 
 //  UTILS
 
@@ -453,8 +414,6 @@ function formatTime(dateStr) {
 
 //  INIT
 
-seedDefaultAdmin();
-checkAdminAuth();
 loadAdminProfile();
 updateStats();
 renderDashboard();
